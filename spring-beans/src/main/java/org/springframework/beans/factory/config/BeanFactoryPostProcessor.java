@@ -43,6 +43,9 @@ import org.springframework.beans.BeansException;
  * @see PropertyResourceConfigurer
  */
 @FunctionalInterface
+/**
+ * 用于
+ */
 public interface BeanFactoryPostProcessor {
 
 	/**

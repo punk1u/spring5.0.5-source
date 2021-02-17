@@ -37,6 +37,11 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.support.RootBeanDefinition
  * @see org.springframework.beans.factory.support.ChildBeanDefinition
  */
+/**
+ * 作用同jdk中的Class，用于描述对象的属性
+ * 但是因为Class描述不了如Scope等spring中的属性，
+ * 所以Spring自己定义了BeanDefinition接口及其子接口和相关实现来描述对象属性
+ */
 public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
 	/**
