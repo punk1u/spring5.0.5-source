@@ -20,6 +20,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
+ * 可以用来干预bean的实例化过程（比如使用代理模式设置bean的代理类）
+ * 当Spring初始化（new）完自定义的bean对象后，
+ * 如果该bean设置了对应了BeanPostProcessor后置处理器，
+ * 会调用该后置处理器的相关实现方法（比如调用postProcessAfterInitialization），
+ * 来实现相关bean对象功能的增强（如设置该原始对象的代理对象等）
  * Factory hook that allows for custom modification of new bean instances,
  * e.g. checking for marker interfaces or wrapping them with proxies.
  *
@@ -43,6 +48,7 @@ import org.springframework.lang.Nullable;
 public interface BeanPostProcessor {
 
 	/**
+	 * 在bean初始化（new）之前执行
 	 * Apply this BeanPostProcessor to the given new bean instance <i>before</i> any bean
 	 * initialization callbacks (like InitializingBean's {@code afterPropertiesSet}
 	 * or a custom init-method). The bean will already be populated with property values.
@@ -61,6 +67,7 @@ public interface BeanPostProcessor {
 	}
 
 	/**
+	 * 在bean初始化（new）之后执行
 	 * Apply this BeanPostProcessor to the given new bean instance <i>after</i> any bean
 	 * initialization callbacks (like InitializingBean's {@code afterPropertiesSet}
 	 * or a custom init-method). The bean will already be populated with property values.

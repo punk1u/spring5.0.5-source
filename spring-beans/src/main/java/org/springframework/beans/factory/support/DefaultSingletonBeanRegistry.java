@@ -79,6 +79,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** Cache of singleton objects: bean name --> bean instance */
 	/**
 	 * 用于存放完全初始化好的bean，如果不是第一次获取bean的话，可以直接从该缓存中取出使用
+	 * 需要注意的是，此Map中存放的是已经完整走完实例化流程被创建出来的BEAN对象
 	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
@@ -194,6 +195,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		 * 开发人员提供的对象这里一般都是空的
 		 */
 		Object singletonObject = this.singletonObjects.get(beanName);
+		/**
+		 * 判断从单例池中获取到的该beanName对应的bean对象是否为空且判断该bean是否正在创建过程中，
+		 * 如果为空且正在创建，则从存放原始的bean对象（还没有被填充属性）的数据结构中取出没有被填充属性的
+		 * 原始bean对象返回，解决循环依赖
+		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
@@ -231,6 +237,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				/**
+				 * 在开始创建前，将beanName添加到singletonsCurrentlyInCreation的Set集合中
+				 * 表示这个beanName对应的bean正在创建中
+				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
@@ -238,6 +248,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					/**
+					 * 这里的singletonFactory.getObject()才会真正地去创建bean
+					 * 创建对象，但是创建出来的对象是代理对象
+					 */
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
