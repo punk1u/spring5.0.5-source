@@ -243,9 +243,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		/**
+		 * 第一次尝试从单例池中获取相应的单例对象
+		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
+				/**
+				 * 判断这个单例对象是否正在创建
+				 */
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.debug("Returning eagerly cached instance of singleton bean '" + beanName +
 							"' that is not fully initialized yet - a consequence of a circular reference");

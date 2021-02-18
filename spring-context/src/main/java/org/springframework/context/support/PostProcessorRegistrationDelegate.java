@@ -61,6 +61,7 @@ class PostProcessorRegistrationDelegate {
 			List<BeanFactoryPostProcessor> regularPostProcessors = new LinkedList<>();
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new LinkedList<>();
 
+			// 自定义的beanFactoryPostProcessors
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =

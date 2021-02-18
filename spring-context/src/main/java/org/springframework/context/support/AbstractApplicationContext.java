@@ -175,6 +175,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	private ConfigurableEnvironment environment;
 
 	/** BeanFactoryPostProcessors to apply on refresh */
+	/**
+	 * 初始化存放BeanFactoryPostProcessor数据的List
+	 */
 	private final List<BeanFactoryPostProcessor> beanFactoryPostProcessors = new ArrayList<>();
 
 	/** System time in milliseconds when this context started */
@@ -545,8 +548,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Invoke factory processors registered as beans in the context.
 				/**
-				 * 扫描并执行在spring的环境中执行已经被注册的factory processors
-				 * 设置执行开发人员自定义的ProcessBeanFactory实现了 和spring内部自己定义的该接口的实现类
+				 * 先扫描指定目录下的所有交给Spring管理的对象，将其添加到Spring上下文环境的BeanDefinitionMap中
+				 * 然后执行开发人员自定义的ProcessBeanFactory和spring内部自己定义的ProcessBeanFactory的实现类，
+				 * 以实现个性化配置对象关系的功能。
+				 * 这一步完成之后，就已经将开发人员交给Spring管理的类添加到ApplicationContext中的BeanDefinitionMap中了
+				 * ProcessBeanFactory作用：
+				 * 实现该接口后可个性化设置BeanFactory中的BeanDefinitions数据
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -569,6 +576,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				/**
+				 * 实例化之前添加到BeanDefinitionMap中的所有的非延迟加载的单例对象
+				 */
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -857,6 +867,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 实例化Spring BeanFactory上下文环境中当前剩余的所有的单例对象
 	 * Finish the initialization of this context's bean factory,
 	 * initializing all remaining singleton beans.
 	 */
@@ -888,6 +899,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		// 真正的实例化方法调用
 		beanFactory.preInstantiateSingletons();
 	}
 

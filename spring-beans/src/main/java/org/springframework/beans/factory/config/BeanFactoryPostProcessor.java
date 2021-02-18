@@ -44,7 +44,8 @@ import org.springframework.beans.BeansException;
  */
 @FunctionalInterface
 /**
- * 用于
+ * 用于后续个性化地在Bean对象真正被Spring创建出来之前修改spring应用上下文的BeanDefinitions对象数据
+ * 以改变最终被创建出来的Bean对象及其属性
  */
 public interface BeanFactoryPostProcessor {
 

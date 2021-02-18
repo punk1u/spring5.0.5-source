@@ -45,6 +45,8 @@ import org.springframework.lang.Nullable;
 public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
 	/**
+	 * 标准单例作用域的作用域标识符
+	 * 所谓单例，就是Spring的IOC机制只创建该类的一个实例
 	 * Scope identifier for the standard singleton scope: "singleton".
 	 * <p>Note that extended bean factories might support further scopes.
 	 * @see #setScope
@@ -52,6 +54,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	String SCOPE_SINGLETON = ConfigurableBeanFactory.SCOPE_SINGLETON;
 
 	/**
+	 * 标准原型作用域的作用域标识符
+	 * 所谓原型，指的是每次调用时，会重新创建该类的一个实例，比较类似于每次new一个对象实例。
 	 * Scope identifier for the standard prototype scope: "prototype".
 	 * <p>Note that extended bean factories might support further scopes.
 	 * @see #setScope

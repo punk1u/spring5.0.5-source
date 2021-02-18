@@ -727,21 +727,40 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return (this.configurationFrozen || super.isBeanEligibleForMetadataCaching(beanName));
 	}
 
+	/**
+	 * 实例化ApplicationContext中存储的BeanDefinitionMap中的单例对象
+	 * @throws BeansException
+	 */
 	@Override
 	public void preInstantiateSingletons() throws BeansException {
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Pre-instantiating singletons in " + this);
 		}
 
+		// 获取所有的需要在这里被实例化的Bean的名字（不包括Lazy懒加载和prototype原型模式的bean对象）
 		// Iterate over a copy to allow for init methods which in turn register new bean definitions.
 		// While this may not be part of the regular factory bootstrap, it does otherwise work fine.
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
 		// Trigger initialization of all non-lazy singleton beans...
+		/**
+		 * 触发所有的非延迟加载单例beans的初始化，主要步骤为调用getBean
+		 */
 		for (String beanName : beanNames) {
+			// 合并父BeanDefinition
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			/**
+			 * bean对象被实例化的前提条件判断：
+			 * 1、不是抽象类
+			 * 2、是单例的对象
+			 * 3、不是延迟加载的
+			 */
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				/**
+				 * 判断Bean是否是FactoryBean
+				 */
 				if (isFactoryBean(beanName)) {
+					// 如果是FactoryBean则加上&
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
 						final FactoryBean<?> factory = (FactoryBean<?>) bean;
@@ -761,6 +780,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					/**
+					 * 如果要获取的bean已经被实例化过了，则直接返回，否则实例化
+					 * 所以是getBean而不是createBean
+					 */
 					getBean(beanName);
 				}
 			}

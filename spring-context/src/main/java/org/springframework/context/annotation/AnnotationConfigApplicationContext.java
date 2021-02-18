@@ -99,6 +99,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 * 然后调用自己的构造方法，在自己的构造方法里初始化一个读取器和扫描器
 		 */
 		this();
+		/** 将传入的Class对象注册到Spring的BeanDifinitionMap中，这样即使传入的Class对象上没有添加
+		 * 交给Spring托管的@Service等注解，该Class对应的对象也会被Spring管理
+		 */
 		register(annotatedClasses);
 		// spring framework最主要的方法之一
 		refresh();
