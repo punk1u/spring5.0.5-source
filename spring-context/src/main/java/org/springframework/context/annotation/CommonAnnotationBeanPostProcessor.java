@@ -73,6 +73,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * 处理一些通用的注解(例如@Resource)的BeanPostProcessor后置处理器类
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that supports common Java annotations out of the box, in particular the JSR-250
  * annotations in the {@code javax.annotation} package. These common Java

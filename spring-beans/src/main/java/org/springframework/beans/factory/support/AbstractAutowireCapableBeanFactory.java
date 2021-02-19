@@ -550,9 +550,24 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			/**
+			 * 创建bean实例，并将实例包裹在BeanWrapper实现类对象中返回
+			 * createBeanInstance中包含三种创建bean实例的方式：
+			 * 1、通过工厂方法创建bean实例
+			 * 2、通过构造方法自动注入（autowire by constructor）的方式创建bean实例
+			 * 3、通过无参构造方法创建bean实例
+			 *
+			 * 若bean的配置信息中配置了lookup-method和replace-method，
+			 * 则会使用CGLIB增强bean实例
+			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		final Object bean = instanceWrapper.getWrappedInstance();
+		/**
+		 * 执行到这个地方的instanceWrapper还只是对象，并不是完整的bean
+		 * 该对象还没有完成依赖自动注入等步骤，其中需要被spring管理并自动注入（autowired）的
+		 * 对象此时还是null
+		 */
 		Class<?> beanType = instanceWrapper.getWrappedClass();
 		if (beanType != NullBean.class) {
 			mbd.resolvedTargetType = beanType;
@@ -562,6 +577,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					// 执行后置处理器
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -581,13 +597,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			/**
+			 * 再次执行后置处理器
+			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			/**
+			 * 设置属性，非常重要
+			 * 这里就是完成bean对象中需要自动注入的属性的逻辑(@Autowire)
+			 */
 			populateBean(beanName, mbd, instanceWrapper);
+			/**
+			 * 执行后置处理器，aop就是在这里完成的处理
+			 */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1311,6 +1337,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// to support styles of field injection.
 		boolean continueWithPropertyPopulation = true;
 
+		/**
+		 * 再次执行后置处理器InstantiationAwareBeanPostProcessor
+		 */
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
@@ -1358,6 +1387,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				for (BeanPostProcessor bp : getBeanPostProcessors()) {
 					if (bp instanceof InstantiationAwareBeanPostProcessor) {
 						InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+						// 再次执行后置处理器
 						pvs = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvs == null) {
 							return;

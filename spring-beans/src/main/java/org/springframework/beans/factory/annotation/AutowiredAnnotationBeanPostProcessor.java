@@ -68,6 +68,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * 完成开发人员通过@Autowired注解进行的自动注入的功能的相关实现类
+ * 比如说，A类中有一个对B类的引用通过@Autowired交给了Spring完成自动注入
+ * 在A类被Spring初始化（new及后续的PostConstruct处理）之后，再通过这个后置处理器
+ * 完成相应的属性的自动注入
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that autowires annotated fields, setter methods and arbitrary config methods.
  * Such members to be injected are detected through a Java 5 annotation: by default,
@@ -365,6 +368,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 
+	/**
+	 * 对bean中需要通过spring管理并通过@Autowire注解完成依赖自动注入的属性进行依赖注入
+	 * @param pvs
+	 * @param pds
+	 * @param bean
+	 * @param beanName
+	 * @return
+	 * @throws BeanCreationException
+	 */
 	@Override
 	public PropertyValues postProcessPropertyValues(
 			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeanCreationException {
