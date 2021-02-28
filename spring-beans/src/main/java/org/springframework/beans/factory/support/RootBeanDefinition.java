@@ -33,6 +33,13 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
+ * Spring 2.5之前是没有GenericBeanDefinition类的，为了描述BeanDefinition的继承关系，都是使用RootBeanDefinition
+ * 类定义通用父类的BeanDefinition信息，再使用ChildBeanDefinition继承RootBeanDefinition信息并在ChildBeanDefinition中
+ * 添加个性化的描述信息
+ *
+ * RootBeanDefinition可以作为模板也可以作为真实的BeanDefinition对象，如果是作为模板被ChildBeanDefinition继承，
+ * 需要使用setAbstract方法来设置为抽象，否则会报错。如果是真实的BeanDefinition对象，需要使用setBeanClass方法来设置
+ * 这个BeanDefinition描述的Class对象
  * A root bean definition represents the merged bean definition that backs
  * a specific bean in a Spring BeanFactory at runtime. It might have been created
  * from multiple original bean definitions that inherit from each other,
@@ -53,6 +60,9 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class RootBeanDefinition extends AbstractBeanDefinition {
 
+	/**
+	 * BeanDefinition的持有者
+	 */
 	@Nullable
 	private BeanDefinitionHolder decoratedDefinition;
 

@@ -73,24 +73,28 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
 
 	/**
+	 * 按照byname注入
 	 * Constant that indicates autowiring bean properties by name.
 	 * @see #setAutowireMode
 	 */
 	public static final int AUTOWIRE_BY_NAME = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME;
 
 	/**
+	 * 按照bytype注入
 	 * Constant that indicates autowiring bean properties by type.
 	 * @see #setAutowireMode
 	 */
 	public static final int AUTOWIRE_BY_TYPE = AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE;
 
 	/**
+	 * 按照构造方法注入
 	 * Constant that indicates autowiring a constructor.
 	 * @see #setAutowireMode
 	 */
 	public static final int AUTOWIRE_CONSTRUCTOR = AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR;
 
 	/**
+	 * 通过内省 自动选择自动装配方式
 	 * Constant that indicates determining an appropriate autowire strategy
 	 * through introspection of the bean class.
 	 * @see #setAutowireMode
@@ -101,12 +105,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int AUTOWIRE_AUTODETECT = AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT;
 
 	/**
+	 * 不检查依赖
 	 * Constant that indicates no dependency check at all.
 	 * @see #setDependencyCheck
 	 */
 	public static final int DEPENDENCY_CHECK_NONE = 0;
 
 	/**
+	 * 检查依赖
 	 * Constant that indicates dependency checking for object references.
 	 * @see #setDependencyCheck
 	 */
@@ -139,25 +145,43 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final String INFER_METHOD = "(inferred)";
 
 
+	/**
+	 * BeanDefinition描述的对应的Class 可能不是最终生成Bean对象时使用的Class
+	 */
 	@Nullable
 	private volatile Object beanClass;
 
 	@Nullable
 	private String scope = SCOPE_DEFAULT;
 
+	/**
+	 * 是否抽象
+	 */
 	private boolean abstractFlag = false;
 
 	private boolean lazyInit = false;
 
 	private int autowireMode = AUTOWIRE_NO;
 
+	/**
+	 * 默认不做依赖检查
+	 */
 	private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 
+	/**
+	 * 存储DependsOn的名字
+	 */
 	@Nullable
 	private String[] dependsOn;
 
+	/**
+	 * 是否作为自动装配候选  bean可以不参与自动装配
+	 */
 	private boolean autowireCandidate = true;
 
+	/**
+	 * 是否作为主要候选bean参与自动装配
+	 */
 	private boolean primary = false;
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>(0);
@@ -165,8 +189,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Nullable
 	private Supplier<?> instanceSupplier;
 
+	/**
+	 * 允许访问非公开方法、构造方法  反射
+	 */
 	private boolean nonPublicAccessAllowed = true;
 
+	/**
+	 * 调用构造方法采用宽松匹配
+	 */
 	private boolean lenientConstructorResolution = true;
 
 	@Nullable
@@ -391,6 +421,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 设置这个BeanDefinition最终要被实例化的Class对象
 	 * Specify the class for this bean.
 	 */
 	public void setBeanClass(@Nullable Class<?> beanClass) {
