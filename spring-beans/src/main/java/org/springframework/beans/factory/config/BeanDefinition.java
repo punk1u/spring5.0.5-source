@@ -41,6 +41,8 @@ import org.springframework.lang.Nullable;
  * 作用同jdk中的Class，用于描述对象的属性
  * 但是因为Class描述不了如Scope等spring中的属性，
  * 所以Spring自己定义了BeanDefinition接口及其子接口和相关实现来描述对象属性
+ *
+ * BeanDefinition接口继承了AttributeAccessor、BeanMetadataElement两个接口
  */
 public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
@@ -92,17 +94,20 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	// Modifiable attributes
 
 	/**
+	 * 设置父定义的名称
 	 * Set the name of the parent definition of this bean definition, if any.
 	 */
 	void setParentName(@Nullable String parentName);
 
 	/**
+	 * 获取父定义的名称
 	 * Return the name of the parent definition of this bean definition, if any.
 	 */
 	@Nullable
 	String getParentName();
 
 	/**
+	 *设置bean的class的名称，即这个BeanDefinition所描述的类的名称
 	 * Specify the bean class name of this bean definition.
 	 * <p>The class name can be modified during bean factory post-processing,
 	 * typically replacing the original class name with a parsed variant of it.
@@ -113,6 +118,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setBeanClassName(@Nullable String beanClassName);
 
 	/**
+	 * 获取bean的class的名称
 	 * Return the current bean class name of this bean definition.
 	 * <p>Note that this does not have to be the actual class name used at runtime, in
 	 * case of a child definition overriding/inheriting the class name from its parent.
@@ -128,6 +134,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	String getBeanClassName();
 
 	/**
+	 * 设置作用域（单例、原型）
 	 * Override the target scope of this bean, specifying a new scope name.
 	 * @see #SCOPE_SINGLETON
 	 * @see #SCOPE_PROTOTYPE
@@ -142,6 +149,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	String getScope();
 
 	/**
+	 * 设置这个BeanDefinition描述的bean对象是否延迟加载
 	 * Set whether this bean should be lazily initialized.
 	 * <p>If {@code false}, the bean will get instantiated on startup by bean
 	 * factories that perform eager initialization of singletons.
@@ -149,24 +157,30 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setLazyInit(boolean lazyInit);
 
 	/**
+	 * 判断这个BeanDefinition描述的bean对象是否需要延迟加载
 	 * Return whether this bean should be lazily initialized, i.e. not
 	 * eagerly instantiated on startup. Only applicable to a singleton bean.
 	 */
 	boolean isLazyInit();
 
 	/**
+	 * 设置这个BeanDefinition所描述的对象被实例化时所依赖的bean对象(可能依赖多个)
 	 * Set the names of the beans that this bean depends on being initialized.
 	 * The bean factory will guarantee that these beans get initialized first.
 	 */
 	void setDependsOn(@Nullable String... dependsOn);
 
 	/**
+	 * 获得这个BeanDefinition所描述的对象被实例化时所依赖的bean对象(可能依赖多个)
 	 * Return the bean names that this bean depends on.
 	 */
 	@Nullable
 	String[] getDependsOn();
 
 	/**
+	 * 设置这个BeanDefinition所描述的Bean对象是否作为自动装配的候选对象
+	 * 即当其他bean对象依赖这个BeanDefinition描述的Bean对象时，这个BeanDefinition描述的Bean对象
+	 * 是否作为自动装配的候选对象，如果是，则这个BeanDefinition描述的Bean对象会被注入到依赖它的Bean对象中
 	 * Set whether this bean is a candidate for getting autowired into some other bean.
 	 * <p>Note that this flag is designed to only affect type-based autowiring.
 	 * It does not affect explicit references by name, which will get resolved even
@@ -176,11 +190,14 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setAutowireCandidate(boolean autowireCandidate);
 
 	/**
+	 * 判断这个BeanDefinition所描述的Bean对象是否作为自动装配的候选对象
 	 * Return whether this bean is a candidate for getting autowired into some other bean.
 	 */
 	boolean isAutowireCandidate();
 
 	/**
+	 * 设置这个BeanDefinition描述的Bean对象为主对象，比如某个接口有两个实现类，可以指定其中一个为主对象，
+	 * 当其他对象中需要注入该接口的实现类时，标注的对象是被标注为主对象的Bean对象
 	 * Set whether this bean is a primary autowire candidate.
 	 * <p>If this value is {@code true} for exactly one bean among multiple
 	 * matching candidates, it will serve as a tie-breaker.
@@ -188,11 +205,13 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setPrimary(boolean primary);
 
 	/**
+	 * 判断这个BeanDefinition描述的Bean对象为主对象
 	 * Return whether this bean is a primary autowire candidate.
 	 */
 	boolean isPrimary();
 
 	/**
+	 * 设置这个BeanDefinition描述的Bean对象的FactoryBean的名字
 	 * Specify the factory bean to use, if any.
 	 * This the name of the bean to call the specified factory method on.
 	 * @see #setFactoryMethodName
@@ -200,12 +219,15 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setFactoryBeanName(@Nullable String factoryBeanName);
 
 	/**
+	 * 获取这个BeanDefinition描述的Bean对象的FactoryBean的名字
 	 * Return the factory bean name, if any.
 	 */
 	@Nullable
 	String getFactoryBeanName();
 
 	/**
+	 * 设置FactoryMethod，如果指定了FactoryMethod，则最终在Spring容器中，该bean对象是这个指定的
+	 * FactoryMethod生成返回的对象
 	 * Specify a factory method, if any. This method will be invoked with
 	 * constructor arguments, or with no arguments if none are specified.
 	 * The method will be invoked on the specified factory bean, if any,
@@ -215,7 +237,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 */
 	void setFactoryMethodName(@Nullable String factoryMethodName);
 
-	/**
+	/** 返回FactoryMethod
 	 * Return a factory method, if any.
 	 */
 	@Nullable
