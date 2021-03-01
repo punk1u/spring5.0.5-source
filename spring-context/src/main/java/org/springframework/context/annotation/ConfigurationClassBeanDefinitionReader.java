@@ -359,6 +359,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 
 	/**
+	 * 使用@Bean注解声明的类会被解析为ConfigurationClassBeanDefinition类
 	 * {@link RootBeanDefinition} marker subclass used to signify that a bean definition
 	 * was created from a configuration class as opposed to any other configuration source.
 	 * Used in bean overriding cases where it's necessary to determine whether the bean

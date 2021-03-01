@@ -82,6 +82,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * of a {@code BeanDefinitionRegistry}
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry) {
+		// 第二个参数useDefaultFilters表示是否使用默认的扫描过滤器
+		// 如果使用默认的扫描过滤器，那么spring会自动扫描到@Service @Controller
 		this(registry, true);
 	}
 

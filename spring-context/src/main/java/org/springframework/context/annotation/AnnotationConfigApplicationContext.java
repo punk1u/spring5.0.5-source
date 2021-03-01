@@ -58,11 +58,12 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
 
 	/**
+	 * 调用默认的构造方法会先执行父类的构造方法
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
-		/** 创建一个读取注解的Bean定义读取器
+		/** 创建一个读取注解（如@Configuration）的Bean定义读取器
 		 * Bean定义：BeanDefinition
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
@@ -187,6 +188,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public void scan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+		// 扫描路径下的注解类
 		this.scanner.scan(basePackages);
 	}
 

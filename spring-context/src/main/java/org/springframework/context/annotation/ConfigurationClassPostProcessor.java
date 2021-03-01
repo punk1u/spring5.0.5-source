@@ -67,13 +67,17 @@ import org.springframework.util.ClassUtils;
 import static org.springframework.context.annotation.AnnotationConfigUtils.*;
 
 /**
+ * 用于对@Configuration的初始化引导处理,包括将Class解析为BeanDefinition对象
  * {@link BeanFactoryPostProcessor} used for bootstrapping processing of
  * {@link Configuration @Configuration} classes.
  *
+ * 当使用<context:annotation-config/>或<context:component-scan/>配置项时会被默认处理
  * <p>Registered by default when using {@code <context:annotation-config/>} or
  * {@code <context:component-scan/>}. Otherwise, may be declared manually as
  * with any other BeanFactoryPostProcessor.
  *
+ * 这个后置处理器是所有后置处理器中最重要的，因为在任何其他BeanFactoryPostProcessor执行之前，
+ * 配置类中使用@Bean声明的任何方法都必须注册各自的bean定义。都需要在这个后置处理器中被解析出来
  * <p>This post processor is {@link Ordered#HIGHEST_PRECEDENCE} as it is important
  * that any {@link Bean} methods declared in Configuration classes have their
  * respective bean definitions registered before any other BeanFactoryPostProcessor

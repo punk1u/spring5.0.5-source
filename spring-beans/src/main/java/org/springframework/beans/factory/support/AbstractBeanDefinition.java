@@ -133,6 +133,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int DEPENDENCY_CHECK_ALL = 3;
 
 	/**
+	 * 如果指定setDestroyMethodName的名称为INFER_METHOD这个常量，则Spring会自动寻找这个BeanDefinition描述的
+	 * 对象中的名为close或shutdown的方法作为销毁Bean对象时要调用的方法
 	 * Constant that indicates the container should attempt to infer the
 	 * {@link #setDestroyMethodName destroy method name} for a bean as opposed to
 	 * explicit specification of a method name. The value {@value} is specifically
