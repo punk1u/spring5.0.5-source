@@ -552,6 +552,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 然后执行开发人员自定义的ProcessBeanFactory和spring内部自己定义的ProcessBeanFactory的实现类，
 				 * 以实现个性化配置对象关系的功能。
 				 * 这一步完成之后，就已经将开发人员交给Spring管理的类添加到ApplicationContext中的BeanDefinitionMap中了
+				 *
 				 * ProcessBeanFactory作用：
 				 * 实现该接口后可个性化设置BeanFactory中的BeanDefinitions数据
 				 */

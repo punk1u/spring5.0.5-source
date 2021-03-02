@@ -313,6 +313,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+			// 默认执行到这里
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -416,8 +417,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
+			// 指定要扫描的package及package下要扫描的文件的格式类型 例如：classpath*:tech/punklu/**/*.class
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			// 根据指定的路径及文件格式类型扫描，并将扫描出的结果封装为Spring自己扩展的易于操作资源的Resource类型
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -427,11 +430,24 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						/**
+						 * 解析出Class类本身的元信息以及类及类内部方法上的注解的元信息并存储在MetadataReader中
+						 */
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						/**
+						 * 判断给定的Class类是否是@Component注解(包括其子注解@Service等)标注的类
+ 						 */
 						if (isCandidateComponent(metadataReader)) {
+							/**
+							 * 被@Component注解及其子注解标注后被封装为BeanDefinition
+							 */
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);
+							/**
+							 * 判断是否是独立类、是否是具体类、是否是抽象类、是否有被Lookup标注的方法
+							 * 只有都不是的时候才会被作为可使用的BeanDefinition
+							 */
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
@@ -482,17 +498,26 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	/**
+	 * 确定给定的类是否匹配合法的筛选器
+	 * 默认的筛选器包括@Component注解的筛选器，又因为@Configuration和@Controller、@Service、@Repository等都
+	 * 是特殊的@Component注解，所以也包含在内
 	 * Determine whether the given class does not match any exclude filter
 	 * and does match at least one include filter.
 	 * @param metadataReader the ASM ClassReader for the class
 	 * @return whether the class qualifies as a candidate component
 	 */
 	protected boolean isCandidateComponent(MetadataReader metadataReader) throws IOException {
+		/**
+		 * 判断给定的类是否不和被排除的筛选器匹配
+		 */
 		for (TypeFilter tf : this.excludeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return false;
 			}
 		}
+		/**
+		 * 判断给定的类和给定的筛选器匹配
+		 */
 		for (TypeFilter tf : this.includeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return isConditionMatch(metadataReader);
@@ -516,6 +541,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	/**
+	 * 确定给定的bean定义是否符合候选。默认实现检查类是否不是接口，也不依赖于封闭类。
 	 * Determine whether the given bean definition qualifies as candidate.
 	 * <p>The default implementation checks whether the class is not an interface
 	 * and not dependent on an enclosing class.
@@ -525,6 +551,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 		AnnotationMetadata metadata = beanDefinition.getMetadata();
+		/**
+		 *  判断是否是独立类、是否是具体类、是否是抽象类、是否有被Lookup标注的方法
+		 */
 		return (metadata.isIndependent() && (metadata.isConcrete() ||
 				(metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
 	}
