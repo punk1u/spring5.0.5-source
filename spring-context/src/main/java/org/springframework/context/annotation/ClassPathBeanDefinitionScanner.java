@@ -164,7 +164,13 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
 
+		/**
+		 * 关键代码 spring内部默认为true，即使用默认的Spring自带的过滤器扫描Bean对象
+		 */
 		if (useDefaultFilters) {
+			/**
+			 * 完成默认过滤器的注册
+			 */
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);

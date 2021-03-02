@@ -204,6 +204,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerDefaultFilters() {
+		/**
+		 * 重要代码
+		 * 将@Component注解的过滤器添加到Spring默认的过滤器中
+		 * 后续Spring扫描到Class后会用这个过滤器判断该Class是否需要被Spring管理
+		 */
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
 		ClassLoader cl = ClassPathScanningCandidateComponentProvider.class.getClassLoader();
 		try {
@@ -517,6 +522,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		}
 		/**
 		 * 判断给定的类和给定的筛选器匹配
+		 * MyBatis就是自定义筛选器来实现的相应MyBatis接口的扫描
 		 */
 		for (TypeFilter tf : this.includeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
