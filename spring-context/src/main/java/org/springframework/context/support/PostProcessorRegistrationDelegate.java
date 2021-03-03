@@ -80,9 +80,19 @@ class PostProcessorRegistrationDelegate {
 			// PriorityOrdered, Ordered, and the rest.
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
+			/**
+			 * 	首先，调用实现PriorityOrdered接口的BeanDefinitionRegistryPostProcessors类
+ 			 */
+			/**
+			 * 	先从BeanFactory中找出来BeanDefinitionRegistryPostProcessor这个后置处理器接口的实现类
+ 			 */
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+			/**
+			 * 然后根据上一步找出的结果判断它对应的类是否实现了PriorityOrdered接口
+			 * 如果实现了的话，将这个bean名称保存起来，方便后续调用
+			 */
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));

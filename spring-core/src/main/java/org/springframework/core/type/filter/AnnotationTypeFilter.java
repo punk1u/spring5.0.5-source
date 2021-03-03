@@ -26,6 +26,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
+ * 用来判断Class上是否有传入的指定的注解，在Spring内部扫描Component及其子注解标注的类时会用到
  * A simple filter which matches classes with a given annotation,
  * checking inherited annotations as well.
  *
