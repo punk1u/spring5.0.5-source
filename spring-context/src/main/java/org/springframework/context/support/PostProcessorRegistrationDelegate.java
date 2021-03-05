@@ -53,6 +53,9 @@ class PostProcessorRegistrationDelegate {
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
+		/**
+		 * 记录已经查找到的符合条件的后置处理器的beanName
+		 */
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		Set<String> processedBeans = new HashSet<>();
 
@@ -74,6 +77,11 @@ class PostProcessorRegistrationDelegate {
 				}
 			}
 
+			/**
+			 * 存储的是当前需要执行的BeanDefinitionRegistryPostProcessor类型的后置处理器
+			 * 下边会将符合条件的添加进来，既包含Spring内置的ConfigurationClassPostProcessor等后置处理器类，也包含
+			 * 程序员添加的自定义后置处理器类
+			 */
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the bean factory post-processors apply to them!
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
@@ -95,6 +103,14 @@ class PostProcessorRegistrationDelegate {
 			 */
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+					/**
+					 * 实例化或直接取出BeanDefinitionRegistryPostProcessor对应的Bean并放入之后要调用的后置处理器List中
+					 * 这个地方之所以有BeanDefinitionRegistryPostProcessor对应的Bean对象存在于BeanDefinitionMap中，
+					 * 是因为在初始化ApplicationContext(调用构造方法)时已经将Spring内置的必须用到的一些后置处理器类添加到了BeanDefinitionMap中，
+					 * 具体可见public AnnotationConfigApplicationContext()这个构造方法
+					 *
+					 * BeanDefinitionRegistryPostProcessor唯一实现类就是ConfigurationClassPostProcessor
+					 */
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
@@ -112,6 +128,9 @@ class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
+			/**
+			 * 对列表中所有的后置处理器进行排序，稍后按顺序调用
+			 */
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);

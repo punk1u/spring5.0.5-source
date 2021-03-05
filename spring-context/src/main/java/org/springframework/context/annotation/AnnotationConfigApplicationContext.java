@@ -64,6 +64,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext() {
 		/** 创建一个读取注解（如@Configuration）的Bean定义读取器
+		 * 这一步中还会将一些Spring内置的类解析并添加到BeanDefinitionMap中
+		 * 包括ConfigurationClassPostProcessor bean工厂后置处理器类、EventListenerFactory、EventListenerMethodProcessor、
+		 * AutowiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor，
+		 * 方便后面继续启动Spring容器用到这些类的时候可以取出来实例化
 		 * Bean定义：BeanDefinition
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);

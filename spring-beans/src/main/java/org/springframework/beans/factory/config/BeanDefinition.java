@@ -64,14 +64,20 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 */
 	String SCOPE_PROTOTYPE = ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
+	/**
+	 * BeanDefinition中的Role用于指定该BeanDefinition在Spring中的地位，比如Spring本身带有的必须用到的bean是作为
+	 * ROLE_INFRASTRUCTURE
+	 */
 
 	/**
+	 * 对应程序员提供的bean的角色常量
 	 * Role hint indicating that a {@code BeanDefinition} is a major part
 	 * of the application. Typically corresponds to a user-defined bean.
 	 */
 	int ROLE_APPLICATION = 0;
 
 	/**
+	 * 通常是外部配置
 	 * Role hint indicating that a {@code BeanDefinition} is a supporting
 	 * part of some larger configuration, typically an outer
 	 * {@link org.springframework.beans.factory.parsing.ComponentDefinition}.
@@ -83,6 +89,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	int ROLE_SUPPORT = 1;
 
 	/**
+	 * 用于表示是Spring内部自己定义的基础设施bean，是不可或缺的角色
 	 * Role hint indicating that a {@code BeanDefinition} is providing an
 	 * entirely background role and has no relevance to the end-user. This hint is
 	 * used when registering beans that are completely part of the internal workings

@@ -128,6 +128,7 @@ public class AnnotationConfigUtils {
 
 
 	/**
+	 * 将Spring后续完成启动需要的Spring内置的后置处理器添加到BeanDefinitionMap中，方便后续用到时直接取出进行实例化
 	 * Register all relevant annotation post processors in the given registry.
 	 * @param registry the registry to operate on
 	 */
@@ -146,6 +147,9 @@ public class AnnotationConfigUtils {
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		/**
+		 * 从BeanDefinitionRegistry中取出对应的BeanFactory工厂
+		 */
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
@@ -164,6 +168,10 @@ public class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * 将AutowiredAnnotationBeanPostProcessor这个bean后置处理器添加进BeanDefinitionMap中,这个后置处理器
+		 * 用于处理@Autowired等注解并完成对应的依赖注入工作
+		 */
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
@@ -176,6 +184,10 @@ public class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, REQUIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * 将通用注解后置处理器类CommonAnnotationBeanPostProcessor这个bean后置处理器添加进BeanDefinitionMap中,这个后置处理器
+		 * 用于处理@Resource、@Value等注解
+		 */
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -212,6 +224,13 @@ public class AnnotationConfigUtils {
 		return beanDefs;
 	}
 
+	/**
+	 * 将传进来的BeanDefinition以beanName的key添加进传入的BeanDefinitionRegistry中的BeanDefinitionMap中去
+	 * @param registry
+	 * @param definition
+	 * @param beanName
+	 * @return
+	 */
 	private static BeanDefinitionHolder registerPostProcessor(
 			BeanDefinitionRegistry registry, RootBeanDefinition definition, String beanName) {
 
