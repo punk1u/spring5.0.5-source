@@ -17,6 +17,8 @@
 package org.springframework.beans.factory;
 
 /**
+ * 接口将由希望在bean工厂中知道其bean名称的bean实现。注意，通常不建议对象依赖于其bean名称，
+ * 因为这表示对外部配置的潜在脆弱依赖，以及对spring api的可能不必要的依赖。
  * Interface to be implemented by beans that want to be aware of their
  * bean name in a bean factory. Note that it is not usually recommended
  * that an object depends on its bean name, as this represents a potentially

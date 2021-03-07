@@ -162,6 +162,9 @@ public class AnnotationConfigUtils {
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(4);
 
+		/**
+		 * 将Spring启动过程中最为重要的ConfigurationClassPostProcessor扫描解析并添加进BeanDefinitionMap中
+		 */
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);

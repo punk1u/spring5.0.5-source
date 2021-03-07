@@ -260,10 +260,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
+	 * 基于注册表中的Configuration注解类中的相关信息建立并验证配置模型
+	 * 此处完成扫描并解析Bean对象以及添加进ApplicationContext使用的BeanFactory中的BeanDefinitionMap中
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+		/**
+		 * 每个BeanDefinitionHolder代表一个BeanDefinition
+		 */
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
@@ -280,11 +285,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 		}
 
+		/**
+		 * 如果找不到@Configuration类，则立即返回
+		 */
 		// Return immediately if no @Configuration classes were found
 		if (configCandidates.isEmpty()) {
 			return;
 		}
 
+		/**
+		 * 按先前确定的@Order排序（如果适用）
+		 */
 		// Sort by previously determined @Order value, if applicable
 		configCandidates.sort((bd1, bd2) -> {
 			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
@@ -292,6 +303,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return Integer.compare(i1, i2);
 		});
 
+		/**
+		 * 检测通过封闭的应用程序上下文方式提供的任何自定义bean名称生成策略
+		 */
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		SingletonBeanRegistry sbr = null;
 		if (registry instanceof SingletonBeanRegistry) {
@@ -309,6 +323,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			this.environment = new StandardEnvironment();
 		}
 
+		/**
+		 * 解析每个@Configuration类
+		 */
 		// Parse each @Configuration class
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
@@ -323,6 +340,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
+			/**
+			 * 阅读模型并基于其内容创建bean定义
+			 */
 			// Read the model and create bean definitions based on its content
 			if (this.reader == null) {
 				this.reader = new ConfigurationClassBeanDefinitionReader(
