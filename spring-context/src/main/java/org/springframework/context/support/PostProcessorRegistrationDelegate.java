@@ -51,6 +51,11 @@ import org.springframework.lang.Nullable;
  */
 class PostProcessorRegistrationDelegate {
 
+	/**
+	 * 找出并调用所有的BeanFactory后置处理器类
+	 * @param beanFactory
+	 * @param beanFactoryPostProcessors
+	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
@@ -223,6 +228,11 @@ class PostProcessorRegistrationDelegate {
 			invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
 		}
 
+		/**
+		 * 找出所有的BeanFactory bean工厂后置处理器实现类的bean对象
+		 * 需要注意的是，在上面的代码中，找出的BeanDefinitionRegistryPostProcessor后置处理器的bean对象
+		 * 是BeanFactoryPostProcessor的子接口，所以这里需要区分是否是已经执行了的BeanDefinitionRegistryPostProcessor的相关bean对象
+		 */
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
 		String[] postProcessorNames =
@@ -248,10 +258,16 @@ class PostProcessorRegistrationDelegate {
 			}
 		}
 
+		/**
+		 * 首先调用实现了PriorityOrdered接口的后置处理器bean对象
+		 */
 		// First, invoke the BeanFactoryPostProcessors that implement PriorityOrdered.
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
 		invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory);
 
+		/**
+		 * 然后，调用实现了Ordered接口的后置处理器bean对象
+		 */
 		// Next, invoke the BeanFactoryPostProcessors that implement Ordered.
 		List<BeanFactoryPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : orderedPostProcessorNames) {
@@ -260,6 +276,9 @@ class PostProcessorRegistrationDelegate {
 		sortPostProcessors(orderedPostProcessors, beanFactory);
 		invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory);
 
+		/**
+		 * 最后调用所有的未实现Ordered相关接口要求优先执行的BeanFactory bean工厂后置处理器
+		 */
 		// Finally, invoke all other BeanFactoryPostProcessors.
 		List<BeanFactoryPostProcessor> nonOrderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : nonOrderedPostProcessorNames) {
