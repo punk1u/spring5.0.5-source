@@ -219,6 +219,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 
 	/**
+	 * 根据提供的Configuration配置类中的指定目录，扫描给定目录下的要交给Spring管理的bean对象并解析后
+	 * 添加进BeanDefinitionMap中
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 */
 	@Override
@@ -234,6 +236,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		/**
+		 * 根据给定的Configuration类指定的目录，扫描目录下的bean对象为BeanDefinition并添加进BeanDefinitionMap中
+		 */
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -331,9 +336,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
+		/**
+		 * 存储Configuration类
+		 */
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
+			/**
+			 * 这一步完成扫描给定目录下bean对象为BeanDefinition并添加进BeanDefinitionMap的动作
+			 */
 			parser.parse(candidates);
 			parser.validate();
 

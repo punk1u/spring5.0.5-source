@@ -239,6 +239,9 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 递归地处理配置类及其超类层次结构。
+		 */
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
@@ -250,6 +253,7 @@ class ConfigurationClassParser {
 	}
 
 	/**
+	 * 根据传入的Configuration配置类的相关信息扫描并解析指定目录下的其他bean对象，然后添加进BeanDefinitionMap中
 	 * Apply processing and build a complete {@link ConfigurationClass} by reading the
 	 * annotations, members and methods from the source class. This method can be called
 	 * multiple times as relevant sources are discovered.
