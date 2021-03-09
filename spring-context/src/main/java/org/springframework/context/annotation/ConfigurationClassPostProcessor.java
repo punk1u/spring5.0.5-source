@@ -280,7 +280,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			/**
-			 * 判断对应的BeanDefinition是否是Spring的启动全配置类或者轻量配置类
+			 * 判断对应的BeanDefinition是否之前已经被标注为Spring的启动全配置类或者轻量配置类（如果已被标注，说明已被处理过，直接跳过）
 			 */
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef) ||
 					ConfigurationClassUtils.isLiteConfigurationClass(beanDef)) {
