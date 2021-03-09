@@ -155,6 +155,13 @@ class PostProcessorRegistrationDelegate {
 			/**
 			 * 把上面的for循环找出的同时实现类BeanDefinitionRegistryPostProcessor这个后置处理器接口
 			 * 和PriorityOrdered接口的实现类先调用执行对应的Bean注册后置处理器
+			 *
+			 * 需要注意的是，在这一步调用的是上面的for循环找出来的同时实现了BeanDefinitionRegistryPostProcessor和PriorityOrdered
+			 * 这两个接口的类，其中就包括Spring内部提供的非常重要的ConfigurationClassPostProcessor类，在这一步会调用ConfigurationClassPostProcessor
+			 * 类中的postProcessBeanDefinitionRegistry方法，这个方法内部会完成根据配置类指定的bean扫描目录扫描并解析目录下的bean对象
+			 * 并封装为BeanDefinition添加进BeanDefinitionMap的过程，因为需要在执行其他后置处理器之前就完成这个扫描的过程，方便调用
+			 * 后面的后置处理器方法时已经可以获取到所有的bean对象，所以ConfigurationClassPostProcessor实现了PriorityOrdered这个接口，用于表示
+			 * 提前执行
 			 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			/**
