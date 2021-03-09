@@ -160,13 +160,24 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * 解析传入的configCandidates Configuration配置中指定的目录下的bean对象，封装为BeanDefinitionMap并添加进BeanDefinitionMap中
+	 * @param configCandidates
+	 */
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
 		this.deferredImportSelectors = new LinkedList<>();
 
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				/**
+				 * 使用public AnnotationConfigApplicationContext(Class<?>... annotatedClasses)这个构造方法
+				 * 创建的Spring上下文中的annotatedClasses在BeanDefinitionMap中的BeanDefinition就是AnnotatedBeanDefinition
+				 */
 				if (bd instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 根据这个注解启动类中的信息扫描解析相关注解并完成BeanDefinition的封装
+					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -198,6 +209,12 @@ class ConfigurationClassParser {
 		processConfigurationClass(new ConfigurationClass(clazz, beanName));
 	}
 
+	/**
+	 * 根据AnnotationMetadata中的信息扫描解析相关注解并根据其提供的信息完成BeanDefinition的封装
+	 * @param metadata
+	 * @param beanName
+	 * @throws IOException
+	 */
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
 		processConfigurationClass(new ConfigurationClass(metadata, beanName));
 	}
@@ -217,6 +234,11 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * 根据ConfigurationClass中的相关信息完成对bean的扫描并封装为BeanDefinition添加进BeanDefinitionMap中
+	 * @param configClass
+	 * @throws IOException
+	 */
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
@@ -245,6 +267,9 @@ class ConfigurationClassParser {
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
+			/**
+			 * 真正扫描目录下的bean对象并解析为BeanDefinitionMap的方法
+			 */
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
@@ -281,6 +306,10 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析ComponentScan注解，并根据这个注解里配置的目录，
+		 * 扫描目录下的所有bean对象并解析为BeanDefinitionMap添加进BeanDefinitionMap中
+		 */
 		// Process any @ComponentScan annotations
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
@@ -300,9 +329,15 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析所有的Import注解
+		 */
 		// Process any @Import annotations
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
+		/**
+		 * 解析所有的@ImportResource注解
+		 */
 		// Process any @ImportResource annotations
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
@@ -315,12 +350,18 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析所有的@Bean注解
+		 */
 		// Process individual @Bean methods
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
+		/**
+		 * 解析接口的默认方法
+		 */
 		// Process default methods on interfaces
 		processInterfaces(configClass, sourceClass);
 
