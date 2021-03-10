@@ -53,6 +53,10 @@ class PostProcessorRegistrationDelegate {
 
 	/**
 	 * 找出并调用所有的BeanFactory后置处理器类
+	 *
+	 * 这个方法里传进来的是程序员通过ApplicationContext的addBeanFactoryPostProcessor方法向Spring上下文环境中
+	 * 添加的BeanFactory后置处理器对象（但是一般不会这么做，直接在后置处理器对象上添加@Component注解、在后面的代码中
+	 * 由Spring扫描进BeanFactory即可满足绝大多数情况的需求）
 	 * @param beanFactory
 	 * @param beanFactoryPostProcessors
 	 */
@@ -64,7 +68,7 @@ class PostProcessorRegistrationDelegate {
 		 */
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		/**
-		 * 记录已经执找到的后置处理器，用于在执行完PriorityOrdered和Ordered接口的对应后置处理器实现类后
+		 * 记录已经找到的后置处理器，用于在执行完PriorityOrdered和Ordered接口的对应后置处理器实现类后
 		 * 找出其他类型的还未被执行的后置处理器
 		 */
 		Set<String> processedBeans = new HashSet<>();
@@ -86,7 +90,11 @@ class PostProcessorRegistrationDelegate {
 			 */
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new LinkedList<>();
 
-			// 自定义的beanFactoryPostProcessors
+			/**
+			 * 首先处理程序员通过ApplicationContext的addBeanFactoryPostProcessor方法向Spring上下文环境中
+			 * 添加的BeanFactory后置处理器对象（但是一般不会这么做，直接在后置处理器对象上添加@Component注解、在后面的代码中
+			 * 由Spring扫描进BeanFactory即可满足绝大多数情况的需求）
+			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				/**
 				 * 如果是BeanFactoryPostProcessor接口的子接口BeanDefinitionRegistryPostProcessor的实现类

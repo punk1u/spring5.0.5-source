@@ -490,6 +490,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
 	/**
+	 * 返回所有的BeanFactory后置处理器对象
 	 * Return the list of BeanFactoryPostProcessors that will get applied
 	 * to the internal BeanFactory.
 	 */
@@ -725,6 +726,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+
+		/**
+		 * getBeanFactoryPostProcessors()方法是从当前的BeanFactory中获取所有的BeanFactory后置处理器
+		 * 在初始化ApplicationContext之后，可以通过ApplicationContext的addBeanFactoryPostProcessor方法向Spring上下文环境中
+		 * 添加BeanFactory后置处理器对象，添加之后，在这里即可获得相应的对象
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
