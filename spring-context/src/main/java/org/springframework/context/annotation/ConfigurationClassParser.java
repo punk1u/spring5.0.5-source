@@ -688,8 +688,9 @@ class ConfigurationClassParser {
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
 						/**
-						 * 判断上一步获取到的registrar是否实现了相关的Aware接口，如果实现了，先调用对应的Aware接口的方法，实现
-						 * 提前执行
+						 * 判断上一步获取到的registrar是否实现了相关的Aware接口，如果实现了，先调用对应的Aware接口的方法
+						 * 在这里，上一步获取到的ImportBeanDefinitionRegistrar对象实现了什么Aware接口，就向这个对象中设置
+						 * 什么属性，比如，如果实现了BeanFactoryAware接口的类，就向其中塞入BeanFactory的值
 						 */
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);

@@ -64,7 +64,7 @@ class PostProcessorRegistrationDelegate {
 		 */
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		/**
-		 * 记录已经执行了哪些后置处理器，用于在执行完PriorityOrdered和Ordered接口的对应后置处理器实现类后
+		 * 记录已经执找到的后置处理器，用于在执行完PriorityOrdered和Ordered接口的对应后置处理器实现类后
 		 * 找出其他类型的还未被执行的后置处理器
 		 */
 		Set<String> processedBeans = new HashSet<>();
@@ -104,7 +104,7 @@ class PostProcessorRegistrationDelegate {
 				}
 				else {
 					/**
-					 * 如果是普通的BeanFactory 后置处理器，添加进存储，后续调用执行
+					 * 如果是普通的BeanFactoryPostProcessor 后置处理器，添加进存储，后续调用执行
 					 */
 					regularPostProcessors.add(postProcessor);
 				}
