@@ -271,6 +271,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 * 真正开始在在指定的基本包内执行扫描，返回已注册的bean定义。此方法不注册注释配置处理器，而是将其留给调用者。
 	 * Perform a scan within the specified base packages,
 	 * returning the registered bean definitions.
 	 * <p>This method does <i>not</i> register an annotation config processor

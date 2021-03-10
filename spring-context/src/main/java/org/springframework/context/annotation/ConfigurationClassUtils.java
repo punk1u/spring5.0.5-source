@@ -86,6 +86,12 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		/**
+		 * 表示类的元信息，包含：
+		 * 1、introspectedClass Class对象，表示这个类的Class
+		 * 2、annotations Annotation[] 表示这个类上的注解数组
+		 * 3、nestedAnnotationsAsMap
+		 */
 		AnnotationMetadata metadata;
 		/**
 		 * 判断BeanDefinition是否是注解配置类（比如@Component等注解标注的类）
@@ -140,6 +146,9 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		/**
+		 * 如果元信息对应的Bean中指定了顺序值的话，将其顺序值放到BeanDefinition的Attribute属性中去
+		 */
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
 		Integer order = getOrder(metadata);
 		if (order != null) {
@@ -173,6 +182,12 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断给定的注解类元信息表示的类上是否包含指定的注解，包括：
+	 * 1、@Component
+	 * 2、@ComponentScan
+	 * 3、@Import
+	 * 4、@ImportResource这四个注解
+	 * 或者在其内部是否具有@Bean注解标注的声明bean对象的方法
 	 * Check the given metadata for a lite configuration class candidate
 	 * (e.g. a class annotated with {@code @Component} or just having
 	 * {@code @Import} declarations or {@code @Bean methods}).

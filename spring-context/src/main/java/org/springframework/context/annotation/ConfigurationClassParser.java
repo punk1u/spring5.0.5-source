@@ -316,9 +316,16 @@ class ConfigurationClassParser {
 		if (!componentScans.isEmpty() &&
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
+				/**
+				 * 根据ComponentScan里指定的配置的目录，执行扫描目录并解析添加bean的功能,返回回来的就是包装扫描到的BeanDefinition的
+				 * BeanDefinitionHolder集合
+				 */
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+				/**
+				 * 检查扫描到的BeanDefinition集合中的定义集是否有任何进一步的配置类，并在需要时递归解析
+				 */
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(
@@ -632,6 +639,13 @@ class ConfigurationClassParser {
 		return group;
 	}
 
+	/**
+	 * 处理bean对象上的@Import注解
+	 * @param configClass
+	 * @param currentSourceClass
+	 * @param importCandidates
+	 * @param checkForCircularImports
+	 */
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
 
@@ -666,10 +680,22 @@ class ConfigurationClassParser {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
+						/**
+						 * 处理ImportBeanDefinitionRegistrar扩展点,主要是实例化这个接口的实现对象
+						 * MyBatis中的@MapperScan注解中的@Import里的类MapperScannerRegistrar接口就是实现的这个扩展接口，
+						 * 会在这里被实例化出来
+						 */
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+						/**
+						 * 判断上一步获取到的registrar是否实现了相关的Aware接口，如果实现了，先调用对应的Aware接口的方法，实现
+						 * 提前执行
+						 */
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
+						/**
+						 * 把实例化好的ImportBeanDefinitionRegistrar存到map中
+						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {
