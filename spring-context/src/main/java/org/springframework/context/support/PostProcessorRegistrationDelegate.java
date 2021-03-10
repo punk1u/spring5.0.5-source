@@ -219,6 +219,10 @@ class PostProcessorRegistrationDelegate {
 					if (!processedBeans.contains(ppName)) {
 						currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 						processedBeans.add(ppName);
+						/**
+						 * 重新把reiterate设置为true是为了再重新从beanFactory找一遍可能由这次找到的BeanDefinitionRegistryPostProcessor
+						 * 后置处理器新引入的后置处理器，所以需要再找一遍，直到找不到为止
+						 */
 						reiterate = true;
 					}
 				}
@@ -229,7 +233,7 @@ class PostProcessorRegistrationDelegate {
 			}
 
 			/**
-			 * 调用到目前为止处理的所有后置处理器的postProcessBeanFactory回调
+			 * 调用到目前为止处理的所有后置处理器的顶层父接口BeanFactoryPostProcessor接口中的postProcessBeanFactory方法。
 			 * 需要注意的是，即使是在这里，BeanDefinitionRegistryPostProcessor接口的postProcessBeanFactory方法的执行顺序依然要
 			 * 高于其父接口BeanFactoryPostProcessor中相同方法postProcessBeanFactory的执行顺序
 			 */
