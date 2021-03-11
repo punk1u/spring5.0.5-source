@@ -251,6 +251,11 @@ class PostProcessorRegistrationDelegate {
 		 * 找出所有的BeanFactory bean工厂后置处理器实现类的bean对象
 		 * 需要注意的是，在上面的代码中，找出的BeanDefinitionRegistryPostProcessor后置处理器的bean对象
 		 * 是BeanFactoryPostProcessor的子接口，所以这里需要区分是否是已经执行了的BeanDefinitionRegistryPostProcessor的相关bean对象
+		 *
+		 * 这个地方之所以可以直接从BeanFactory中获取对应的后置处理器的信息，是因为在上面的代码中，已经通过查找同时
+		 * 实现了BeanDefinitionRegistryPostProcessor和PriorityOrdered接口的实现类找到了ConfigurationClassPostProcessor类
+		 * 并调用了其扫描Bean对象的postProcessBeanDefinitionRegistry方法，把所有通过@Component等注解标注为Bean的对象都添加进了
+		 * BeanFactory，所以这里可以直接从BeanFactory中获取
 		 */
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
