@@ -337,7 +337,7 @@ class ConfigurationClassParser {
 		}
 
 		/**
-		 * 解析所有的Import注解
+		 * 解析所有的Import注解,包括Spring扫描MyBatis的mapper对象并解析为BeanDefinition都是在这个里边完成的
 		 */
 		// Process any @Import annotations
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
@@ -553,6 +553,7 @@ class ConfigurationClassParser {
 
 
 	/**
+	 * 从传入的sourceClass取出其上的所有@Import注解的相关信息
 	 * Returns {@code @Import} class, considering all meta-annotations.
 	 */
 	private Set<SourceClass> getImports(SourceClass sourceClass) throws IOException {
@@ -684,6 +685,12 @@ class ConfigurationClassParser {
 						 * 处理ImportBeanDefinitionRegistrar扩展点,主要是实例化这个接口的实现对象
 						 * MyBatis中的@MapperScan注解中的@Import里的类MapperScannerRegistrar接口就是实现的这个扩展接口，
 						 * 会在这里被实例化出来
+						 *
+						 * MyBatis的MapperScan注解上有如下注解：@Import(MapperScannerRegistrar.class)，
+						 * 而MapperScannerRegistrar这个对象就实现了ImportBeanDefinitionRegistrar接口，
+						 * 所以这里会将MyBatis和Spring整合的这个MapperScannerRegistrar对象保存起来，方便后续调用
+						 * ImportBeanDefinitionRegistrar接口中的registerBeanDefinitions方法，扫描出MyBatis的mapper对象并解析
+						 * 为BeanDefinitionMap
 						 */
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);

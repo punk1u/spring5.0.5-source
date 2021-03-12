@@ -275,6 +275,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 * 每个BeanDefinitionHolder代表一个BeanDefinition
 		 */
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+		/**
+		 * 这里的candidateNames里会包含Spring内置的几个功能强大的开天辟地的类以及程序员自己的Configuration配置类信息
+		 * 其中，Spring内置的类包含：
+		 * 1、org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+		 * 2、org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+		 * 3、org.springframework.context.annotation.internalRequiredAnnotationProcessor
+		 * 4、org.springframework.context.annotation.internalCommonAnnotationProcessor
+		 * 5、org.springframework.context.event.internalEventListenerProcessor
+		 * 6、org.springframework.context.event.internalEventListenerFactory
+		 */
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		for (String beanName : candidateNames) {
@@ -355,6 +365,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			parser.parse(candidates);
 			parser.validate();
 
+			/**
+			 * 从上一步解析出来的结果中取出ConfigurationClass配置类信息
+			 */
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
@@ -367,6 +380,12 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+			/**
+			 * 这一步会执行MyBatis-Spring整合代码里边的@MapperScan注解里的@Import里指定的
+			 * MapperScannerRegistrar类的registerBeanDefinitions方法
+			 *
+			 * 因为在上面的parser.parse(candidates) 这行代码中已经把@Import相关的信息找出来放进configClasses里了，所以这里可以直接调用
+			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
