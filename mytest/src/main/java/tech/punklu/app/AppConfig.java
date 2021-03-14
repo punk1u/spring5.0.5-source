@@ -18,6 +18,7 @@ public class AppConfig {
 
 	@Bean
 	public B b(){
+		System.out.println("b init");
 		a();
 		return new B();
 	}
