@@ -243,6 +243,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
+	 * 准备在运行时为bean请求提供服务的Configuration配置类，具体实现方法是用CGLIB增强的子类替换它们。
 	 * Prepare the Configuration classes for servicing bean requests at runtime
 	 * by replacing them with CGLIB-enhanced subclasses.
 	 */
@@ -260,6 +261,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
+		/**
+		 * 实现代理增强全配置类（@Configuration标注的类）
+		 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -424,16 +428,33 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
+	 * 后置处理器中在BeanFactory中查找对应的Configuration类的BeanDefinition定义，然后
+	 * 通过ConfigurationClassEnhancer增强任何候选对象。候选状态由BeanDefinition属性元数据确定
 	 * Post-processes a BeanFactory in search of Configuration class BeanDefinitions;
 	 * any candidates are then enhanced by a {@link ConfigurationClassEnhancer}.
 	 * Candidate status is determined by BeanDefinition attribute metadata.
 	 * @see ConfigurationClassEnhancer
 	 */
 	public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
+		/**
+		 * 用于存储需要代理增强的全配置类（@Configuration标注的类）的BeanDefinition
+		 */
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
+		/**
+		 * 遍历BeanFactory中存储的之前通过postProcessBeanDefinitionRegistry方法扫描出来的所有的BeanDefinition
+		 */
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
+			/**
+			 * 判断BeanDefinition是否是全配置类(@Configuration注解标注的类)，之前在postProcessBeanDefinitionRegistry方法
+			 * 中通过调用ConfigurationClassUtils.checkConfigurationClassCandidate方法分析标注过是不是全配置类
+			 *
+			 * 如果是全配置类（@Configuration标注的bean对象），则将这个BeanDefinitionMap存储起来，方便后续统一代理增强
+			 */
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef)) {
+				/**
+				 * 抽象的BeanDefinition不可被增强
+				 */
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +
 							beanName + "' since it is not stored in an AbstractBeanDefinition subclass");
@@ -444,6 +465,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							"is a non-static @Bean method with a BeanDefinitionRegistryPostProcessor " +
 							"return type: Consider declaring such methods as 'static'.");
 				}
+				/**
+				 * 存储起来，方便后续代理增强
+				 */
 				configBeanDefs.put(beanName, (AbstractBeanDefinition) beanDef);
 			}
 		}
@@ -452,6 +476,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return;
 		}
 
+		/**
+		 * 创建全配置类的代理增强器类
+		 */
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
@@ -467,6 +494,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							logger.debug(String.format("Replacing bean definition '%s' existing class '%s' with " +
 									"enhanced class '%s'", entry.getKey(), configClass.getName(), enhancedClass.getName()));
 						}
+						/**
+						 * 替换掉BeanDefinition中原有的BeanClass，取而代之的是新创建出来的代理类，这样，最终bean对象被创建出来的时候
+						 * 就是代理类了，实现了代理
+						 */
 						beanDef.setBeanClass(enhancedClass);
 					}
 				}
