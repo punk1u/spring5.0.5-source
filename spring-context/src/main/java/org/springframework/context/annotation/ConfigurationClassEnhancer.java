@@ -144,7 +144,8 @@ class ConfigurationClassEnhancer {
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
 		/**
-		 * 设置代理类的回调过滤器
+		 * 设置代理类的回调过滤器，非常重要，决定了执行到对应的方法时的处理，比如对@Configuration注解标注的类
+		 * 中的@Bean标注的方法设置代理
 		 */
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
