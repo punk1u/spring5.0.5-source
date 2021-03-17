@@ -241,11 +241,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
 		final String beanName = transformedBeanName(name);
+		/**
+		 * 将被返回的真正的bean对象
+		 */
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
-		 * 第一次尝试从单例池中获取相应的单例对象
+		 * 第一次尝试从单例池中获取相应的单例对象，如果在单例池中取不到，
+		 * 则默认会从三级缓存中取出该单例对象的FactoryBean，然后用这个FactoryBean尝试创建一个
+		 * 单例对象的早期对象（只是实例化完的对象，还没有进行属性注入等操作，因此不算是bean对象）
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
