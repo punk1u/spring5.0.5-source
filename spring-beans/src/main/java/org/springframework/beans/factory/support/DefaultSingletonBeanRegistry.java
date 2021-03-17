@@ -156,6 +156,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
+	 * 添加给定的单例工厂以在必要情况下构建指定的单例对象。
+	 * 例如 以便能够解析循环引用。
 	 * Add the given singleton factory for building the specified singleton
 	 * if necessary.
 	 * <p>To be called for eager registration of singletons, e.g. to be able to
@@ -229,6 +231,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
 		synchronized (this.singletonObjects) {
+			/**
+			 * 尝试从单例池容器中直接获取
+			 */
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
@@ -253,6 +258,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					/**
 					 * 这里的singletonFactory.getObject()才会真正地去创建bean
 					 * 创建对象，但是创建出来的对象是代理对象
+					 * 这里的singletonFactory.getObject()实际上就是执行调用这个方法的地方的第二个参数（lambda表达式）
 					 */
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
@@ -370,6 +376,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @see #isSingletonCurrentlyInCreation
 	 */
 	protected void beforeSingletonCreation(String beanName) {
+		/**
+		 * inCreationCheckExclusions是存储不需要检查是否正在创建的bean对象的集合
+		 * 如果需要检查是否正在创建（普通bean都是），则将这个bean添加到表示正在创建的集合中
+		 */
 		if (!this.inCreationCheckExclusions.contains(beanName) && !this.singletonsCurrentlyInCreation.add(beanName)) {
 			throw new BeanCurrentlyInCreationException(beanName);
 		}

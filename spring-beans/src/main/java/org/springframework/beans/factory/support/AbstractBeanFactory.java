@@ -341,9 +341,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					 * 第二次调用getSingleton
 					 */
 					sharedInstance = getSingleton(beanName, () -> {
+						/**
+						 * 这段lambda表达式代码实质上就是这里需要的第二个参数ObjectFactory中的getObject()方法
+						 * 的具体实现，在getSingleton方法中，调用第二个参数singleFactory.getObject()
+						 * 就是执行这段lambda表达式
+						 */
 						try {
 							/**
-							 * 真正执行创建bean的代码逻辑
+							 * 真正执行创建bean的代码逻辑,
+							 * 如果需要代理，还会一起完成代理
 							 */
 							return createBean(beanName, mbd, args);
 						}
