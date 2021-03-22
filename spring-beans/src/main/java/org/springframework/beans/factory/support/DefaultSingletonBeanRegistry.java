@@ -78,7 +78,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/** Cache of singleton objects: bean name --> bean instance */
 	/**
-	 * 用于存放完全初始化好的bean，如果不是第一次获取bean的话，可以直接从该缓存中取出使用
+	 * 用于存放完全初始化好的bean的单例池，如果不是第一次获取bean的话，可以直接从该缓存中取出使用
 	 * 需要注意的是，此Map中存放的是已经完整走完实例化流程被创建出来的BEAN对象
 	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
@@ -156,6 +156,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
+	 * 添加给定的单例工厂以在必要情况下构建指定的单例对象。
+	 * 例如 以便能够解析循环引用。
 	 * Add the given singleton factory for building the specified singleton
 	 * if necessary.
 	 * <p>To be called for eager registration of singletons, e.g. to be able to
@@ -181,6 +183,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
+	 * 返回在给定名称下注册的（原始）单例对象。
+	 * 检查已经实例化的单例，还允许使用对当前要创建的单例的早期对象（用来解析循环依赖）
 	 * Return the (raw) singleton object registered under the given name.
 	 * <p>Checks already instantiated singletons and also allows for an early
 	 * reference to a currently created singleton (resolving a circular reference).
@@ -227,6 +231,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
 		synchronized (this.singletonObjects) {
+			/**
+			 * 尝试从单例池容器中直接获取
+			 */
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
@@ -251,6 +258,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					/**
 					 * 这里的singletonFactory.getObject()才会真正地去创建bean
 					 * 创建对象，但是创建出来的对象是代理对象
+					 * 这里的singletonFactory.getObject()实际上就是执行调用这个方法的地方的第二个参数（lambda表达式）
 					 */
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
@@ -368,6 +376,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @see #isSingletonCurrentlyInCreation
 	 */
 	protected void beforeSingletonCreation(String beanName) {
+		/**
+		 * inCreationCheckExclusions是存储不需要检查是否正在创建的bean对象的集合
+		 * 如果需要检查是否正在创建（普通bean都是），则将这个bean添加到表示正在创建的集合中
+		 */
 		if (!this.inCreationCheckExclusions.contains(beanName) && !this.singletonsCurrentlyInCreation.add(beanName)) {
 			throw new BeanCurrentlyInCreationException(beanName);
 		}

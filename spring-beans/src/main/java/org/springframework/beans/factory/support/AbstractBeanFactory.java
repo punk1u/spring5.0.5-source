@@ -241,11 +241,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
 		final String beanName = transformedBeanName(name);
+		/**
+		 * 将被返回的真正的bean对象
+		 */
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
-		 * 第一次尝试从单例池中获取相应的单例对象
+		 * 第一次尝试从单例池中获取相应的单例对象，如果在单例池中取不到，
+		 * 则默认会从三级缓存中取出该单例对象的FactoryBean，然后用这个FactoryBean尝试创建一个
+		 * 单例对象的早期对象（只是实例化完的对象，还没有进行属性注入等操作，因此不算是bean对象）
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
@@ -274,6 +279,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
+			/**
+			 * 检查当前Factory中是否存在要获取的bean
+			 */
 			// Check if bean definition exists in this factory.
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
@@ -302,6 +310,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				/**
+				 * 处理这个bean依赖的信息
+				 */
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
@@ -322,14 +333,24 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Create bean instance.
 				/**
-				 * 如果是单例的bean对象，则开始创建对象
+				 * 如果是单例的bean对象，且之前第一次尝试从单例池中获取时没有获取到，
+				 * 说明这个bean之前没有被创建出来过，所以执行到此处，此时开始真正创建对象
 				 */
 				if (mbd.isSingleton()) {
 					/**
 					 * 第二次调用getSingleton
 					 */
 					sharedInstance = getSingleton(beanName, () -> {
+						/**
+						 * 这段lambda表达式代码实质上就是这里需要的第二个参数ObjectFactory中的getObject()方法
+						 * 的具体实现，在getSingleton方法中，调用第二个参数singleFactory.getObject()
+						 * 就是执行这段lambda表达式
+						 */
 						try {
+							/**
+							 * 真正执行创建bean的代码逻辑,
+							 * 如果需要代理，还会一起完成代理
+							 */
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {

@@ -58,17 +58,22 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
 
 	/**
+	 * 调用默认的构造方法会先执行父类的构造方法
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
-		/** 创建一个读取注解的Bean定义读取器
+		/** 创建一个读取注解（如@Configuration）的Bean定义读取器
+		 * 这一步中还会将一些Spring内置的类解析并添加到BeanDefinitionMap中
+		 * 包括ConfigurationClassPostProcessor bean工厂后置处理器类、EventListenerFactory、EventListenerMethodProcessor、
+		 * AutowiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor，
+		 * 方便后面继续启动Spring容器用到这些类的时候可以取出来实例化
 		 * Bean定义：BeanDefinition
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 
 		/**
-		 * 可以用来扫描包或者类，继而转换成bd
+		 * 可以用来扫描包或者类，继而将指定包下的要被Spring管理的Bean对象转换成bd
 		 * 但是实际上扫描包工作不是scanner这个对象来完成的
 		 * 是spring内部new的一个ClassPathBeanDefinitionScanner
 		 * 这里的scanner仅仅是为了应用开发人员可以在外部调用AnnotationConfigApplicationContext对象
@@ -187,6 +192,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public void scan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+		// 扫描路径下的注解类
 		this.scanner.scan(basePackages);
 	}
 

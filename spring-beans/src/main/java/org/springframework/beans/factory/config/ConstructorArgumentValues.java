@@ -43,8 +43,14 @@ import org.springframework.util.ObjectUtils;
  */
 public class ConstructorArgumentValues {
 
+	/**
+	 * 当声明Spring Bean时，如果是根据构造方法参数的下标存储的，则会存入这个Map中，其中key为参数的下标
+	 */
 	private final Map<Integer, ValueHolder> indexedArgumentValues = new LinkedHashMap<>(0);
 
+	/**
+	 * 如果不是根据构造方法参数的下标存储的，则会存入这个List中
+	 */
 	private final List<ValueHolder> genericArgumentValues = new LinkedList<>();
 
 

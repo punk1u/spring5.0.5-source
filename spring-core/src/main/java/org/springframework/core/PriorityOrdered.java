@@ -17,6 +17,8 @@
 package org.springframework.core;
 
 /**
+ * 接口的扩展，表示优先级顺序：实现这个接口的对象执行时的优先级始终在实现Ordered接口的对象之前，
+ * 设计上PriorityOrdered接口是Ordered的子接口
  * Extension of the {@link Ordered} interface, expressing a <em>priority</em>
  * ordering: order values expressed by {@code PriorityOrdered} objects
  * always apply before same order values expressed by <em>plain</em>
@@ -28,6 +30,10 @@ package org.springframework.core;
  * prioritized post-processors in a Spring
  * {@link org.springframework.context.ApplicationContext}.
  *
+ * 实现了PriorityOrdered的后置处理器bean在一个特殊的阶段初始化，先于其他后处理器bean。
+ * 这微妙地影响了它们的自动连接行为：它们将只针对bean进行自动连接，而bean不需要为类型匹配进行紧急初始化。
+ *
+ * eager:adj 热切的;渴望的;渴求的
  * <p>Note: {@code PriorityOrdered} post-processor beans are initialized in
  * a special phase, ahead of other post-processor beans. This subtly
  * affects their autowiring behavior: they will only be autowired against

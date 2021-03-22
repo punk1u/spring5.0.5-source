@@ -6,7 +6,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.stereotype.Component;
 import tech.punklu.service.TestService;
 
-@Component
+//@Component
 public class BeanFactoryPostProcessor implements org.springframework.beans.factory.config.BeanFactoryPostProcessor {
 
 	@Override

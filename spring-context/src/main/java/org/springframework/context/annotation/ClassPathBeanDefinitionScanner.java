@@ -82,6 +82,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * of a {@code BeanDefinitionRegistry}
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry) {
+		// 第二个参数useDefaultFilters表示是否使用默认的扫描过滤器
+		// 如果使用默认的扫描过滤器，那么spring会自动扫描到@Service @Controller
 		this(registry, true);
 	}
 
@@ -162,7 +164,13 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
 
+		/**
+		 * 关键代码 spring内部默认为true，即使用默认的Spring自带的过滤器扫描Bean对象
+		 */
 		if (useDefaultFilters) {
+			/**
+			 * 完成默认过滤器的注册
+			 */
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -243,6 +251,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 
 	/**
+	 * 扫描指定路径下要被Spring管理的注解类
 	 * Perform a scan within the specified base packages.
 	 * @param basePackages the packages to check for annotated classes
 	 * @return number of beans registered
@@ -250,6 +259,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	public int scan(String... basePackages) {
 		int beanCountAtScanStart = this.registry.getBeanDefinitionCount();
 
+		// 开始扫描
 		doScan(basePackages);
 
 		// Register annotation config processors, if necessary.
@@ -261,6 +271,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 * 真正开始在在指定的基本包内执行扫描，返回已注册的bean定义。此方法不注册注释配置处理器，而是将其留给调用者。
 	 * Perform a scan within the specified base packages,
 	 * returning the registered bean definitions.
 	 * <p>This method does <i>not</i> register an annotation config processor
@@ -272,6 +283,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			/**
+			 * 关键代码，完成扫描,并将bean封装为BeanDefinition
+ 			 */
+
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);

@@ -19,6 +19,9 @@ package org.springframework.core;
 import org.springframework.lang.Nullable;
 
 /**
+ * 提供对BeanDefinition元数据操作的API（被BeanDefinition接口继承）
+ * 元数据：对BeanDefinition的额外描述信息
+ * 实现类：AttributeAccessorSupport及AbstractBeanDefinition
  * Interface defining a generic contract for attaching and accessing metadata
  * to/from arbitrary objects.
  *

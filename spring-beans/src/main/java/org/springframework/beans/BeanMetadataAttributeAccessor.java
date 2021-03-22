@@ -20,6 +20,9 @@ import org.springframework.core.AttributeAccessorSupport;
 import org.springframework.lang.Nullable;
 
 /**
+ * 同时实现了BeanDefinition接口继承的两个接口AttributeAccessor和BeanMetadataElement接口
+ * 并最终被BeanDefinition的抽象实现类AbstractBeanDefinition类继承，为BeanDefinition接口及其
+ * 实现类增加了控制访问BeanDefinition元数据和查询Class文件存储位置的功能
  * Extension of {@link org.springframework.core.AttributeAccessorSupport},
  * holding attributes as {@link BeanMetadataAttribute} objects in order
  * to keep track of the definition source.

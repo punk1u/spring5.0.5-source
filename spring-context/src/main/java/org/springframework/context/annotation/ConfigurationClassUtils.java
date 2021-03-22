@@ -71,6 +71,8 @@ abstract class ConfigurationClassUtils {
 
 
 	/**
+	 * 检查给定的BeanDefinition是否是候选配置类（或者在配置/组件类中声明的嵌套组件类，也要自动注册），并相应地标记它是Full Configuration类
+	 * 还是Lite Configuration类。
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
@@ -84,10 +86,22 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		/**
+		 * 表示类的元信息，包含：
+		 * 1、introspectedClass Class对象，表示这个类的Class
+		 * 2、annotations Annotation[] 表示这个类上的注解数组
+		 * 3、nestedAnnotationsAsMap
+		 */
 		AnnotationMetadata metadata;
+		/**
+		 * 判断BeanDefinition是否是注解配置类（比如@Component等注解标注的类）
+		 */
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
+			/**
+			 * 获取这个注解BeanDefinition描述的对象的所有元信息
+			 */
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
@@ -109,9 +123,22 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		/**
+		 * 判断给定的BeanDefinition描述的对象是否具有@Configuration注解
+		 * 如果具有，则向给定的BeanDefinition添加属性，标注这个BeanDefinition为Full Configuration。
+		 * 用于在ConfigurationClassPostProcessor中的postProcessBeanDefinitionRegistry方法里调用的
+		 * processConfigBeanDefinitions方法里判断这个BeanDefinition是否已被处理过
+		 */
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		/**
+		 * 判断传入的BeanDefinition表示的Bean对象上是否具有@Component、@ComponentScan、@Import、@ImportResource这四个注解
+		 * 或者在其内部是否具有@Bean注解标注的声明bean对象的方法
+		 * 如果具有，则向给定的BeanDefinition添加属性，标注这个BeanDefinition为Lite Configuration。
+		 * 用于在ConfigurationClassPostProcessor中的postProcessBeanDefinitionRegistry方法里调用的
+		 * processConfigBeanDefinitions方法里判断这个BeanDefinition是否已被处理过
+		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
@@ -119,6 +146,9 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		/**
+		 * 如果元信息对应的Bean中指定了顺序值的话，将其顺序值放到BeanDefinition的Attribute属性中去
+		 */
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
 		Integer order = getOrder(metadata);
 		if (order != null) {
@@ -140,6 +170,7 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 检查给定的元数据以获得完整的候选配置类（即用{@code@Configuration}注释的类）。
 	 * Check the given metadata for a full configuration class candidate
 	 * (i.e. a class annotated with {@code @Configuration}).
 	 * @param metadata the metadata of the annotated class
@@ -151,6 +182,12 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断给定的注解类元信息表示的类上是否包含指定的注解，包括：
+	 * 1、@Component
+	 * 2、@ComponentScan
+	 * 3、@Import
+	 * 4、@ImportResource这四个注解
+	 * 或者在其内部是否具有@Bean注解标注的声明bean对象的方法
 	 * Check the given metadata for a lite configuration class candidate
 	 * (e.g. a class annotated with {@code @Component} or just having
 	 * {@code @Import} declarations or {@code @Bean methods}).
@@ -184,6 +221,12 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断是否是full configuration，带有@Configuration注解的类，那么这个类叫做full configuration，
+	 * 需要注意的是，该方法中并不直接判断是否带有Configuration注解，而是判断bean.getAttribute是否标记为FULL，
+	 * 也就是说，直接使用一个bean是无法判断具体是不是full configuration，所以，应该在bean实例化之后，
+	 * 调用bean.setAttribute标记是否为full，
+	 * 具体操作是在ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry方法里调用本类中的
+	 * checkConfigurationClassCandidate方法进行的
 	 * Determine whether the given bean definition indicates a full {@code @Configuration}
 	 * class, through checking {@link #checkConfigurationClassCandidate}'s metadata marker.
 	 */
@@ -192,6 +235,13 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断是否是lite configuration，带@Component，@ComponentScan，@Import，@ImportResource，@Bean 5个注解中的任一个，
+	 * 那么这个类叫做lite configuration
+	 * 该方法中并不直接判断是否带有相应的注解，而是判断bean.getAttribute是否标记为FULL，
+	 * 也就是说，直接使用一个BeanDefinition是无法判断具体是不是lite configuration，所以，应该在bean实例化之后，
+	 * 调用bean.setAttribute标记是否为lite
+	 * 具体操作是在ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry方法里调用本类中的
+	 * checkConfigurationClassCandidate方法进行的
 	 * Determine whether the given bean definition indicates a lite {@code @Configuration}
 	 * class, through checking {@link #checkConfigurationClassCandidate}'s metadata marker.
 	 */

@@ -781,6 +781,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 				else {
 					/**
+					 * 获取普通bean（非FactoryBean）
 					 * 如果要获取的bean已经被实例化过了，则直接返回，否则实例化
 					 * 所以是getBean而不是createBean
 					 */

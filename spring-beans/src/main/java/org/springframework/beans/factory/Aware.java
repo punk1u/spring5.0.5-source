@@ -17,6 +17,9 @@
 package org.springframework.beans.factory;
 
 /**
+ * Aware及其子接口的作用在于使其实现类可以感知到其自身的一些属性
+ * 比如实现了ApplicationContextAware接口的类，能够获取到ApplicationContext，
+ * 实现了BeanFactoryAware接口的类，能够获取到BeanFactory对象
  * Marker superinterface indicating that a bean is eligible to be
  * notified by the Spring container of a particular framework object
  * through a callback-style method. Actual method signature is

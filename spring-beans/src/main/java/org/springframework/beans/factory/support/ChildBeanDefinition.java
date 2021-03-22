@@ -51,6 +51,8 @@ public class ChildBeanDefinition extends AbstractBeanDefinition {
 
 
 	/**
+	 * 创建ChildBeanDefinition的时候必须指定它的父BeanDefinition在Spring容器中的名字（beanName）
+	 * 即它要继承的RootBeanDefinition中所描述的Bean的名字（beanName）
 	 * Create a new ChildBeanDefinition for the given parent, to be
 	 * configured through its bean properties and configuration methods.
 	 * @param parentName the name of the parent bean

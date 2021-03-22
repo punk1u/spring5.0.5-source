@@ -24,9 +24,13 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * 具有名称和别名的BeanDefinition的持有者。
+ * 可以注册为内部bean的占位符。
+ * 注册RootBeanDefinition或ChildBeanDefinition就足够了
  * Holder for a BeanDefinition with name and aliases.
  * Can be registered as a placeholder for an inner bean.
- *
+ * 也可以用于内部bean的编程注册定义。
+ * 如果你不在乎BeanNameAware之类的东西，
  * <p>Can also be used for programmatic registration of inner bean
  * definitions. If you don't care about BeanNameAware and the like,
  * registering RootBeanDefinition or ChildBeanDefinition is good enough.

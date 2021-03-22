@@ -490,6 +490,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
 	/**
+	 * 返回所有的BeanFactory后置处理器对象
 	 * Return the list of BeanFactoryPostProcessors that will get applied
 	 * to the internal BeanFactory.
 	 */
@@ -552,6 +553,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 然后执行开发人员自定义的ProcessBeanFactory和spring内部自己定义的ProcessBeanFactory的实现类，
 				 * 以实现个性化配置对象关系的功能。
 				 * 这一步完成之后，就已经将开发人员交给Spring管理的类添加到ApplicationContext中的BeanDefinitionMap中了
+				 *
 				 * ProcessBeanFactory作用：
 				 * 实现该接口后可个性化设置BeanFactory中的BeanDefinitions数据
 				 */
@@ -578,6 +580,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Instantiate all remaining (non-lazy-init) singletons.
 				/**
 				 * 实例化之前添加到BeanDefinitionMap中的所有的非延迟加载的单例对象
+				 * validate验证和实例化都包含在内
 				 */
 				finishBeanFactoryInitialization(beanFactory);
 
@@ -723,6 +726,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+
+		/**
+		 * getBeanFactoryPostProcessors()方法是从当前的BeanFactory中获取所有的BeanFactory后置处理器
+		 * 在初始化ApplicationContext之后，可以通过ApplicationContext的addBeanFactoryPostProcessor方法向Spring上下文环境中
+		 * 添加BeanFactory后置处理器对象，添加之后，在这里即可获得相应的对象
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
@@ -734,6 +743,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 按照明确的顺序实例化并调用所有注册的BeanPostProcessor bean
 	 * Instantiate and invoke all registered BeanPostProcessor beans,
 	 * respecting explicit order if given.
 	 * <p>Must be called before any instantiation of application beans.

@@ -160,13 +160,24 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * 解析传入的configCandidates Configuration配置中指定的目录下的bean对象，封装为BeanDefinitionMap并添加进BeanDefinitionMap中
+	 * @param configCandidates
+	 */
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
 		this.deferredImportSelectors = new LinkedList<>();
 
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				/**
+				 * 使用public AnnotationConfigApplicationContext(Class<?>... annotatedClasses)这个构造方法
+				 * 创建的Spring上下文中的annotatedClasses在BeanDefinitionMap中的BeanDefinition就是AnnotatedBeanDefinition
+				 */
 				if (bd instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 根据这个注解启动类中的信息扫描解析相关注解并完成BeanDefinition的封装
+					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -198,6 +209,12 @@ class ConfigurationClassParser {
 		processConfigurationClass(new ConfigurationClass(clazz, beanName));
 	}
 
+	/**
+	 * 根据AnnotationMetadata中的信息扫描解析相关注解并根据其提供的信息完成BeanDefinition的封装
+	 * @param metadata
+	 * @param beanName
+	 * @throws IOException
+	 */
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
 		processConfigurationClass(new ConfigurationClass(metadata, beanName));
 	}
@@ -217,6 +234,11 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * 根据ConfigurationClass中的相关信息完成对bean的扫描并封装为BeanDefinition添加进BeanDefinitionMap中
+	 * @param configClass
+	 * @throws IOException
+	 */
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
@@ -239,9 +261,15 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 递归地处理配置类及其超类层次结构。
+		 */
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
+			/**
+			 * 真正扫描目录下的bean对象并解析为BeanDefinitionMap的方法
+			 */
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
@@ -250,6 +278,7 @@ class ConfigurationClassParser {
 	}
 
 	/**
+	 * 根据传入的Configuration配置类的相关信息扫描并解析指定目录下的其他bean对象，然后添加进BeanDefinitionMap中
 	 * Apply processing and build a complete {@link ConfigurationClass} by reading the
 	 * annotations, members and methods from the source class. This method can be called
 	 * multiple times as relevant sources are discovered.
@@ -277,15 +306,26 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析ComponentScan注解，并根据这个注解里配置的目录，
+		 * 扫描目录下的所有bean对象并解析为BeanDefinitionMap添加进BeanDefinitionMap中
+		 */
 		// Process any @ComponentScan annotations
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
+				/**
+				 * 根据ComponentScan里指定的配置的目录，执行扫描目录并解析添加bean的功能,返回回来的就是包装扫描到的BeanDefinition的
+				 * BeanDefinitionHolder集合
+				 */
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+				/**
+				 * 检查扫描到的BeanDefinition集合中的定义集是否有任何进一步的配置类，并在需要时递归解析
+				 */
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(
@@ -296,9 +336,15 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析所有的Import注解,包括Spring扫描MyBatis的mapper对象并解析为BeanDefinition都是在这个里边完成的
+		 */
 		// Process any @Import annotations
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
+		/**
+		 * 解析所有的@ImportResource注解
+		 */
 		// Process any @ImportResource annotations
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
@@ -311,12 +357,18 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 解析所有的@Bean注解
+		 */
 		// Process individual @Bean methods
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
+		/**
+		 * 解析接口的默认方法
+		 */
 		// Process default methods on interfaces
 		processInterfaces(configClass, sourceClass);
 
@@ -501,6 +553,7 @@ class ConfigurationClassParser {
 
 
 	/**
+	 * 从传入的sourceClass取出其上的所有@Import注解的相关信息
 	 * Returns {@code @Import} class, considering all meta-annotations.
 	 */
 	private Set<SourceClass> getImports(SourceClass sourceClass) throws IOException {
@@ -587,6 +640,13 @@ class ConfigurationClassParser {
 		return group;
 	}
 
+	/**
+	 * 处理bean对象上的@Import注解
+	 * @param configClass
+	 * @param currentSourceClass
+	 * @param importCandidates
+	 * @param checkForCircularImports
+	 */
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
 
@@ -621,10 +681,29 @@ class ConfigurationClassParser {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
+						/**
+						 * 处理ImportBeanDefinitionRegistrar扩展点,主要是实例化这个接口的实现对象
+						 * MyBatis中的@MapperScan注解中的@Import里的类MapperScannerRegistrar接口就是实现的这个扩展接口，
+						 * 会在这里被实例化出来
+						 *
+						 * MyBatis的MapperScan注解上有如下注解：@Import(MapperScannerRegistrar.class)，
+						 * 而MapperScannerRegistrar这个对象就实现了ImportBeanDefinitionRegistrar接口，
+						 * 所以这里会将MyBatis和Spring整合的这个MapperScannerRegistrar对象保存起来，方便后续调用
+						 * ImportBeanDefinitionRegistrar接口中的registerBeanDefinitions方法，扫描出MyBatis的mapper对象并解析
+						 * 为BeanDefinitionMap
+						 */
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+						/**
+						 * 判断上一步获取到的registrar是否实现了相关的Aware接口，如果实现了，先调用对应的Aware接口的方法
+						 * 在这里，上一步获取到的ImportBeanDefinitionRegistrar对象实现了什么Aware接口，就向这个对象中设置
+						 * 什么属性，比如，如果实现了BeanFactoryAware接口的类，就向其中塞入BeanFactory的值
+						 */
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
+						/**
+						 * 把实例化好的ImportBeanDefinitionRegistrar存到map中
+						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {

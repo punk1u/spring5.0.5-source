@@ -19,6 +19,8 @@ package org.springframework.beans;
 import org.springframework.lang.Nullable;
 
 /**
+ * 用于提供类文件（class文件）的具体存放路径（被BeanDefinition接口继承）
+ * 实现类：BeanMetadataAttributeAccessor和AbstractBeanDefinition
  * Interface to be implemented by bean metadata elements
  * that carry a configuration source object.
  *

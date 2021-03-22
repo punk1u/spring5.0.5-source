@@ -27,6 +27,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
+ * 存储BeanDefinition所描述的Bean对象中的属性信息
  * Default implementation of the {@link PropertyValues} interface.
  * Allows simple manipulation of properties, and provides constructors
  * to support deep copy and construction from a Map.
@@ -39,6 +40,9 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("serial")
 public class MutablePropertyValues implements PropertyValues, Serializable {
 
+	/**
+	 * 存储BeanDefinition所描述的Bean对象中的属性信息
+	 */
 	private final List<PropertyValue> propertyValueList;
 
 	@Nullable

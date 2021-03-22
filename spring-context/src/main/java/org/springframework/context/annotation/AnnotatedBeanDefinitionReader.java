@@ -71,6 +71,7 @@ public class AnnotatedBeanDefinitionReader {
 	}
 
 	/**
+	 * 把Spring内部的Spring本身必须要用到的类先扫描并解析添加进BeanDefinitionMap中
 	 * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry and using
 	 * the given {@link Environment}.
 	 * @param registry the {@code BeanFactory} to load bean definitions into,
