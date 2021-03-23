@@ -589,7 +589,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.postProcessed) {
 				try {
 					/**
-					 * 第三次执行bean后置处理器
+					 * 第三次执行bean后置处理器，用于合并BeanDefinition
  					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
@@ -615,7 +615,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			/**
 			 * 将当前bean放入三级缓存中
-			 * 第四次执行bean后置处理器，处理循环依赖
+			 * getEarlyBeanReference方法中第四次执行bean后置处理器，处理循环依赖
 			 * 因为到目前为止，产生的bean对象只是半成品，还没有完成依赖注入等步骤，所以这个
 			 * 方法的第二个参数是产生bean的一个工厂对象
 			 */
@@ -987,6 +987,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
+				/**
+				 * 通过调用SmartInstantiationAwareBeanPostProcessor后置处理器的getEarlyBeanReference方法来获取一个bean的早期引用实例
+				 */
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
 					exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
@@ -1416,6 +1419,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 */
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				/**
+				 * 第五次执行bean后置处理器方法
 				 * 如果Bean类实现了InstantiationAwareBeanPostProcessor，需要判断其中的postProcessAfterInstantiation方法
 				 * 返回结果，如果是返回结果是false。则不会进行属性注入，反之如果是true，则会进行属性注入，spring默认为true
 				 */
@@ -1481,10 +1485,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (bp instanceof InstantiationAwareBeanPostProcessor) {
 						InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 						/**
-						 * 再次执行后置处理器，调用实现了InstantiationAwareBeanPostProcessor接口的bean后置处理器，
+						 * 第六次执行后置处理器方法，调用实现了InstantiationAwareBeanPostProcessor接口的bean后置处理器，
 						 * 例如，CommonAnnotationBeanPostProcessor这个bean后置处理器的postProcessPropertyValues用于处理@Resource
 						 * 注解的属性注入，AutowiredAnnotationBeanPostProcessor这个bean后置处理器的postProcessPropertyValues方法
 						 * 用于处理@Autowired注解的属性注入等，各有各的用处，使用策略模式完成不同的注解解析
+						 *
+						 * 其中的bean后置处理器类包括 用于处理@Autowired和@Value的AutowiredAnnotationBeanPostProcessor和处理@Resource的
+						 * CommonAnnotationBeanPostProcessor、以及处理ORM的PersistenceAnnotationBeanPostProcessor、以及处理@Required
+						 * 的RequiredAnnotationBeanPostProcessor等
 						 */
 						pvs = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvs == null) {
@@ -1832,6 +1840,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
+			/**
+			 * 调用相关的Aware方法，注入对应的Aware实例
+			 * 注意，这个地方只能处理BeanNameAware、BeanClassLoaderAware、BeanFactoryAware三种Aware接口
+			 */
 			invokeAwareMethods(beanName, bean);
 		}
 
@@ -1841,11 +1853,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 */
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			/**
+			 * 在bean的初始化之前调用一系列的bean后置处理器，包括：
+			 * 1、
+			 * 调用ApplicationContextAwareProcessor的postProcessBeforeInitialization完成EnvironmentAware、
+			 * EmbeddedValueResolverAware、ResourceLoaderAware、ApplicationEventPublisherAware、
+			 * MessageSourceAware、ApplicationContextAware的Aware注入
+			 * 2、调用ScheduledAnnotationBeanPostProcessor的postProcessBeforeInitialization方法完成定时任务注解的相关bean的后置处理
+			 * 3、调用ServletContextAwareProcessor和SimpleServletPostProcessor的postProcessBeforeInitialization方法完成Spring web的ServletContext的相关处理
+			 * 4、调用InitDestroyAnnotationBeanPostProcessor的postProcessBeforeInitialization方法完成包括@PostConstruct相关bean生命周期的回调处理
+			 *
+			 */
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		/**
-		 * 调用初始化方法
+		 * 调用初始化方法，包括处理实现了InitializingBean接口的bean对象和调用程序员自定义的初始化方法
 		 */
 		try {
 			invokeInitMethods(beanName, wrappedBean, mbd);
@@ -1904,6 +1927,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
 			throws Throwable {
 
+		/**
+		 * 如果bean实现了InitializingBean这个初始化接口，在此处调用该接口的afterPropertiesSet()初始化方法
+		 */
 		boolean isInitializingBean = (bean instanceof InitializingBean);
 		if (isInitializingBean && (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
 			if (logger.isDebugEnabled()) {
