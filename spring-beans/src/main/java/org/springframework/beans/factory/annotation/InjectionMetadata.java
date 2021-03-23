@@ -88,6 +88,9 @@ public class InjectionMetadata {
 				if (debug) {
 					logger.debug("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				/**
+				 * 注入属性
+				 */
 				element.inject(target, beanName, pvs);
 			}
 		}

@@ -602,7 +602,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		/**
-		 * 判断是否允许循环依赖
+		 * 是否允许提前暴露对象，如果当前bean为单例，且允许循环引用，与当前bean正在创建中，则允许提前暴露
 		 */
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
@@ -614,6 +614,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 			/**
+			 * 将当前bean放入三级缓存中
 			 * 第四次执行bean后置处理器，处理循环依赖
 			 * 因为到目前为止，产生的bean对象只是半成品，还没有完成依赖注入等步骤，所以这个
 			 * 方法的第二个参数是产生bean的一个工厂对象
@@ -628,12 +629,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 设置属性，也就是常常说的自动注入，非常重要
 			 * 这里就是完成bean对象中需要自动注入的属性的逻辑(@Autowire)
 			 * 里面会完成第五次和第六次后置处理器的调用
+			 *
+			 * 开始设置属性，当前bean依赖于其它bean，则需要 doGetBean 创建依赖的bean，
+			 * 如果依赖的bean不存在，则首先创建依赖的bean，循环依赖发生的位置
 			 */
 			populateBean(beanName, mbd, instanceWrapper);
 			/**
 			 * 初始化spring
 			 * 进行第七次和第八次后置处理器的调用
-			 * 执行后置处理器，aop就是在这里完成的处理
+			 *
+			 * 执行初始化方法和aop增强，此时如果有aop，
+			 * exposedObject就是增强以后的对象了,但是有一点需要注意，
+			 * 如果提前执行了aop，则exposedObject不会再次执行aop了
 			 */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
@@ -647,6 +654,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		/**
+		 * 如果为true，说明当前正在处理的bean有可能产生循环依赖，进一步判断
+		 */
 		if (earlySingletonExposure) {
 			/**
 			 * 指定不允许循环依赖，所以只会依次从一级缓存、二级缓存中获取bean，
@@ -654,10 +664,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 */
 			Object earlySingletonReference = getSingleton(beanName, false);
 			/**
-			 * 如果二级缓存中存在这个对象
+			 * 如果二级缓存中存在这个对象，说明当前处理的bean是循环依赖中的起始bean，即两个循环依赖bean对象中的
+			 * 第一个被处理的bean
 			 */
 			if (earlySingletonReference != null) {
+				/**
+				 * 如果exposedObject == bean，说明在处理循环依赖的过程中发生了提前aop,需要将exposedObject替换为二级缓存中的对象，
+				 * 以实现最终被添加到一级缓存中的当前的循环依赖中的起始bean是提前执行aop代理逻辑后的bean对象，而不是原始对象，从而达到
+				 * 提前aop的效果
+				 */
 				if (exposedObject == bean) {
+					/**
+					 * exposedObject就是要放入单例池中的对象，如果提前执行了aop，则将exposedObject对象替换为aop以后的对象
+					 * 这个地方可能有一些疑问，exposedObject是原始对象执行过 依赖注入，而earlySingletonReference是提前执行aop的对象，
+					 * 没有执行过依赖注入，是不是有什么问题呢？
+					 * 答案是不会，因为earlySingletonReference作为exposedObject的增强对象，内部是持有原对象的引用的
+					 */
 					exposedObject = earlySingletonReference;
 				}
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {

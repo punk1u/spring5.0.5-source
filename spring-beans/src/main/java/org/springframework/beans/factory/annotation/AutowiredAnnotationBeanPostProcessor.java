@@ -383,6 +383,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
+			/**
+			 * 完成对Bean中的属性的注入
+			 */
 			metadata.inject(bean, beanName, pvs);
 		}
 		catch (BeanCreationException ex) {

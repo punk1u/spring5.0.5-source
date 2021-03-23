@@ -195,21 +195,32 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		/**
-		 * 从map中获取bean如果不为空直接返回，不再进行初始化工作
-		 * 开发人员提供的对象这里一般都是空的
+		 * 首先去一级缓存中获取如果获取的到说明bean已经存在，直接返回
 		 */
 		Object singletonObject = this.singletonObjects.get(beanName);
 		/**
-		 * 判断从单例池中获取到的该beanName对应的bean对象是否为空且判断该bean是否正在创建过程中，
-		 * 如果为空且正在创建，则从存放原始的bean对象（还没有被填充属性）的数据结构中取出没有被填充属性的
-		 * 原始bean对象返回，解决循环依赖
+		 * 如果一级缓存中不存在，则去判断该bean是否在创建中，如果该bean正在创建中，就说明了，
+		 * 之前已经被标记为正在创建了，但是现在又要创建这个bean，说明这个时候发生了循环依赖
 		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
+				/**
+				 * 如果发生循环依赖，首先去二级缓存中获取，如果获取到则返回，这个地方就是获取aop增强以后的bean
+				 */
 				singletonObject = this.earlySingletonObjects.get(beanName);
+				/**
+				 * 如果二级缓存中不存在，且允许提前访问三级引用
+				 */
 				if (singletonObject == null && allowEarlyReference) {
+					/**
+					 * 去三级缓存中获取
+					 */
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
+						/**
+						 * 如果三级缓存中的lambda表达式存在，执行aop，获取增强以后的对象，
+						 * 为了防止重复aop，将三级缓存删除，升级到二级缓存中
+						 */
 						singletonObject = singletonFactory.getObject();
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
@@ -245,8 +256,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
 				/**
-				 * 在开始创建前，将beanName添加到singletonsCurrentlyInCreation的Set集合中
-				 * 表示这个beanName对应的bean正在创建中
+				 * 将当前bean加入到 singletonsCurrentlyInCreation 这个map中，
+				 * 这个map里面是正在创建中的bean，用于判断循环依赖
 				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
@@ -283,9 +294,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
+					/**
+					 * 将 singletonsCurrentlyInCreation 里面的这个bean删除
+					 */
 					afterSingletonCreation(beanName);
 				}
 				if (newSingleton) {
+					/**
+					 * bean创建完成，将bean加入到单例池中
+					 */
 					addSingleton(beanName, singletonObject);
 				}
 			}

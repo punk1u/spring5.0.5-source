@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import tech.punklu.bean.A;
 import tech.punklu.bean.B;
 
-@ComponentScan("tech.punklu.bean")
+@ComponentScan("tech.punklu")
 @Configuration
 public class AppConfig {
 
