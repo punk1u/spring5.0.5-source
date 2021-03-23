@@ -648,7 +648,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (earlySingletonExposure) {
+			/**
+			 * 指定不允许循环依赖，所以只会依次从一级缓存、二级缓存中获取bean，
+			 * 同时，因为已经执行到了这里，说明一级缓存中肯定不存在，所以就是从二级缓存中获取早期单例对象
+			 */
 			Object earlySingletonReference = getSingleton(beanName, false);
+			/**
+			 * 如果二级缓存中存在这个对象
+			 */
 			if (earlySingletonReference != null) {
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;

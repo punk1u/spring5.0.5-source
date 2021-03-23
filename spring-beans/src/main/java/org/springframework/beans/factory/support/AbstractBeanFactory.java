@@ -249,8 +249,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
 		 * 第一次尝试从单例池中获取相应的单例对象，如果在单例池中取不到，
-		 * 则默认会从三级缓存中取出该单例对象的FactoryBean，然后用这个FactoryBean尝试创建一个
-		 * 单例对象的早期对象（只是实例化完的对象，还没有进行属性注入等操作，因此不算是bean对象）
+		 * 则再次尝试从二级缓存中获取早期暴露对象，如果还是获取不到的话，
+		 * 尝试从三级缓存中获取对象，如果都获取不到则继续向下执行
+		 *
+		 * 这个地方需要注意的地方在于，当单例bean产生循环依赖时，比如A和B互相依赖，
+		 * 对A进行实例化后会先把A的对象工厂（产生A的代理对象的工厂）放入三级缓存，
+		 * 然后再对A进行属性注入，此时会再次调用本方法，只是beanName换成了b，同样的，b的对象工厂
+		 * 也会被放入三级缓存，然后对b执行属性注入的时候，会再次调用此方法获取A，此时，因为第一次获取A的时候
+		 * 已经把A的对象工厂类放入了三级缓存，所以可以获取到A的早期引用，将A的早期引用放入单例池，并从三级缓存中删除，
+		 * 就解决了循环依赖，同时在解决循环依赖的过程中，因为三级缓存的引入，
+		 * 在调用三级缓存生成对象时会执行提前AOP，也一并执行了解决了如果只有二级缓存情况下解决不了的B中的A对象不是想要的代理对象的，
+		 * 而是单纯的A对象的问题
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {

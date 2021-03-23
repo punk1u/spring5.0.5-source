@@ -85,7 +85,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/** Cache of singleton factories: bean name --> ObjectFactory */
 	/**
-	 * 存放bean工厂对象解决循环依赖
+	 * 存放可以产生对应的bean对象的工厂对象，其中存储的工厂对象在循环依赖清空下会提前执行aop的逻辑，以实现在解决循环依赖的清空还能解决代理的功能
 	 */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
