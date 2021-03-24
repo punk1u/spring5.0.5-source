@@ -265,6 +265,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 * 实现代理增强全配置类（@Configuration标注的类）
 		 */
 		enhanceConfigurationClasses(beanFactory);
+		/**
+		 * 将ImportAwareBeanPostProcessor这个BeanPostProcessor
+		 * 这个bean后置处理器类添加到BeanFactory中，以便后续执行bean后置处理器的时候可以调用到
+		 */
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
 
