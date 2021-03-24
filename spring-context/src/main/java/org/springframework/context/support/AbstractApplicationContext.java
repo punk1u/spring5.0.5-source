@@ -673,6 +673,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		/**
+		 * 向BeanFactory中添加ApplicationContextAwareProcessor这个bean后置处理器，用于在
+		 * ioc阶段调用以实现向实现了这个ApplicationContextAware的接口中注入ApplicationContext、
+		 * MessageSource、ApplicationEventPublisher、ResourceLoader、EmbeddedValueResolver、
+		 * Environment等上下文环境
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
@@ -689,10 +695,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
+		/**
+		 * 向BeanFactory中添加处理实现了ApplicationListener接口的bean的生命周期回调的BeanPostProcessor bean后置处理器类
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
 		if (beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
+			/**
+			 * 添加LoadTimeWeaverAwareProcessor bean后置处理器类，作用未知
+			 */
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));

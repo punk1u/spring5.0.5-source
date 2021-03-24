@@ -35,6 +35,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * 将ApplicationContext传递给实现EnvironmentAware、EmbeddedValueResolverAware的bean的实现，
+ * ResourceLoaderAware，ApplicationEventPublisherAware、MessageSourceAware和/或ApplicationContextAware接口也包括在内
+ *
  * {@link org.springframework.beans.factory.config.BeanPostProcessor}
  * implementation that passes the ApplicationContext to beans that
  * implement the {@link EnvironmentAware}, {@link EmbeddedValueResolverAware},
@@ -74,6 +77,13 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	}
 
 
+	/**
+	 * 向对应的bean中注入相应的包括ApplicationContext、Environment等环境的属性
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
