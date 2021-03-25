@@ -331,6 +331,9 @@ class PostProcessorRegistrationDelegate {
 		// Register BeanPostProcessorChecker that logs an info message when
 		// a bean is created during BeanPostProcessor instantiation, i.e. when
 		// a bean is not eligible for getting processed by all BeanPostProcessors.
+		/**
+		 * 注册bean后置处理器类 BeanPostProcessorChecker
+		 */
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
@@ -387,6 +390,10 @@ class PostProcessorRegistrationDelegate {
 		sortPostProcessors(internalPostProcessors, beanFactory);
 		registerBeanPostProcessors(beanFactory, internalPostProcessors);
 
+		/**
+		 * 将用于检测内部bean的后处理器重新注册为ApplicationListener，
+		 * 将其移动到处理器链的末端（用于获取代理等）。
+		 */
 		// Re-register post-processor for detecting inner beans as ApplicationListeners,
 		// moving it to the end of the processor chain (for picking up proxies etc).
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(applicationContext));
@@ -438,6 +445,7 @@ class PostProcessorRegistrationDelegate {
 
 
 	/**
+	 * BeanPostProcessorChecker用于检查是否存在不会被所有后置处理器处理的bean
 	 * BeanPostProcessor that logs an info message when a bean is created during
 	 * BeanPostProcessor instantiation, i.e. when a bean is not eligible for
 	 * getting processed by all BeanPostProcessors.
@@ -462,6 +470,11 @@ class PostProcessorRegistrationDelegate {
 
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) {
+			/**
+			 * 1、bean不是后置处理器，
+			 * 2、不是内部bean，
+			 * 3、此时注册的后置处理器小于计算的总后置处理器
+			 */
 			if (!(bean instanceof BeanPostProcessor) && !isInfrastructureBean(beanName) &&
 					this.beanFactory.getBeanPostProcessorCount() < this.beanPostProcessorTargetCount) {
 				if (logger.isInfoEnabled()) {
