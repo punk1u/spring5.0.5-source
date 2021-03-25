@@ -122,7 +122,7 @@ import java.lang.annotation.Target;
 /**
  * 这个注解上的@Import注解会同时引入AspectJAutoProxyRegistrar中的配置，
  * AspectJAutoProxyRegistrar中会将AnnotationAwareAspectJAutoProxyCreator（继承自BeanPostProcessor）bean后置处理器
- * 添加进BeanFactory的BeanPostProcessor列表中用于影响bean的实例化
+ * 添加进BeanFactory的BeanPostProcessor列表中用于实现bean的aop
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -101,7 +101,8 @@ public abstract class AopConfigUtils {
 			@Nullable Object source) {
 
 		/**
-		 * 将Bean后置处理器AnnotationAwareAspectJAutoProxyCreator注册进BeanFactory中
+		 * 将Bean后置处理器AnnotationAwareAspectJAutoProxyCreator注册进BeanFactory中，
+		 * 此bean后置处理器用于实现bean的aop
 		 */
 		return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
 	}
