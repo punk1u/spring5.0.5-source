@@ -3,11 +3,13 @@ package tech.punklu.app;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import tech.punklu.bean.A;
 import tech.punklu.bean.B;
 
 @ComponentScan("tech.punklu")
 @Configuration
+@EnableAspectJAutoProxy
 public class AppConfig {
 
 	@Bean

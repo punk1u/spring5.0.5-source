@@ -23,6 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 支持处理被AspectJ的{@code@Aspect}注解标记的components，类似于Spring的{@code @Aspect}注解
+ * 中的功能<aop:aspectj autoproxy>}XML元素。用于@{@link Configuration}类
  * Enables support for handling components marked with AspectJ's {@code @Aspect} annotation,
  * similar to functionality found in Spring's {@code <aop:aspectj-autoproxy>} XML element.
  * To be used on @{@link Configuration} classes as follows:
@@ -115,6 +117,12 @@ import java.lang.annotation.Target;
  * @author Juergen Hoeller
  * @since 3.1
  * @see org.aspectj.lang.annotation.Aspect
+ */
+
+/**
+ * 这个注解上的@Import注解会同时引入AspectJAutoProxyRegistrar中的配置，
+ * AspectJAutoProxyRegistrar中会将AnnotationAwareAspectJAutoProxyCreator（继承自BeanPostProcessor）bean后置处理器
+ * 添加进BeanFactory的BeanPostProcessor列表中用于影响bean的实例化
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
