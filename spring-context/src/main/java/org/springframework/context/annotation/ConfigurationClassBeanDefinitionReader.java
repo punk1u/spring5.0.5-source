@@ -141,6 +141,11 @@ class ConfigurationClassBeanDefinitionReader {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		/**
+		 * 调用实现了ImportBeanDefinitionRegistrar接口对应的实例的registerBeanDefinitions方法，MyBatis和Spring整合使用的
+		 * MapperScan注解中引入的MapperScannerRegistrar就是ImportBeanDefinitionRegistrar接口的实现对象，在这里调用
+		 * MapperScannerRegistrar中的registerBeanDefinitions方法来注册用于扫描并解析Mapper对象的Bean工厂后置处理器 MapperScannerConfigurer
+		 */
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 
