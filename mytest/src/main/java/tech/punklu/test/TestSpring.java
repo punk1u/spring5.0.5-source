@@ -3,6 +3,7 @@ package tech.punklu.test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import tech.punklu.app.AppConfig;
 import tech.punklu.bean.A;
+import tech.punklu.circle.OrderService;
 
 public class TestSpring {
 
@@ -16,5 +17,6 @@ public class TestSpring {
 		//System.out.println(annotationConfigApplicationContext.getBean(UserService.class));
 		System.out.println(annotationConfigApplicationContext.getBean(A.class));
 		System.out.println(annotationConfigApplicationContext.getBean(A.class));
+		annotationConfigApplicationContext.getBean(OrderService.class).blank();
 	}
 }
