@@ -126,12 +126,16 @@ public class ContextLoader {
 	private static final String INIT_PARAM_DELIMITERS = ",; \t\n";
 
 	/**
+	 * ContextLoader.properties中声明了默认要使用的WebApplicationContext的类
 	 * Name of the class path resource (relative to the ContextLoader class)
 	 * that defines ContextLoader's default strategy names.
 	 */
 	private static final String DEFAULT_STRATEGIES_PATH = "ContextLoader.properties";
 
 
+	/**
+	 * 存储默认要使用的WebApplicationContext的类(XmlWebApplicationContext)
+	 */
 	private static final Properties defaultStrategies;
 
 	static {
@@ -275,6 +279,9 @@ public class ContextLoader {
 			// Store context in local instance variable, to guarantee that
 			// it is available on ServletContext shutdown.
 			if (this.context == null) {
+				/**
+				 * 创建WebApplicationContext实例
+				 */
 				this.context = createWebApplicationContext(servletContext);
 			}
 			if (this.context instanceof ConfigurableWebApplicationContext) {
@@ -291,6 +298,9 @@ public class ContextLoader {
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
+			/**
+			 * 将WebApplicationContext存储在ServletContext中
+			 */
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
@@ -298,6 +308,9 @@ public class ContextLoader {
 				currentContext = this.context;
 			}
 			else if (ccl != null) {
+				/**
+				 * 映射当前的类加载器与创建的实例到全局变量currentContextPerThread中
+				 */
 				currentContextPerThread.put(ccl, this.context);
 			}
 
@@ -325,6 +338,12 @@ public class ContextLoader {
 	}
 
 	/**
+	 * 为此ContextLoader实例化此加载程序的根WebApplicationContext，
+	 * 可以是默认上下文类，也可以是自定义上下文类（如果指定）。
+	 * 此实现要求自定义上下文实现{@link ConfigurableWebApplicationContext}接口。
+	 * 可以在子类中重写。此外，在刷新上下文之前调用{@link# customizeContext}，
+	 * 允许子类对上下文执行自定义修改。
+	 *
 	 * Instantiate the root WebApplicationContext for this loader, either the
 	 * default context class or a custom context class if specified.
 	 * <p>This implementation expects custom contexts to implement the
@@ -337,15 +356,23 @@ public class ContextLoader {
 	 * @see ConfigurableWebApplicationContext
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc) {
+		/**
+		 * 根据给定的ServletContext获取对应的WebApplicationContext 对象的Class
+		 */
 		Class<?> contextClass = determineContextClass(sc);
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
 			throw new ApplicationContextException("Custom context class [" + contextClass.getName() +
 					"] is not of type [" + ConfigurableWebApplicationContext.class.getName() + "]");
 		}
+		/**
+		 * 根据找到的WebApplicationContext的Class类进行实例化
+		 */
 		return (ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 	}
 
 	/**
+	 * 返回要使用的WebApplicationContext实现类
+	 * 默认使用XmlWebApplicationContext或自定义上下文类（如果指定）。
 	 * Return the WebApplicationContext implementation class to use, either the
 	 * default XmlWebApplicationContext or a custom context class if specified.
 	 * @param servletContext current servlet context
@@ -365,6 +392,12 @@ public class ContextLoader {
 			}
 		}
 		else {
+			/**
+			 * 默认获取XmlWebApplicationContext
+			 *
+			 * 在此ContextLoader被初始化的时候在static代码块中读取ContextLoader.properties文件中的
+			 * 定义的默认的WebApplicationContext的实例对象并存储在defaultStrategies中
+			 */
 			contextClassName = defaultStrategies.getProperty(WebApplicationContext.class.getName());
 			try {
 				return ClassUtils.forName(contextClassName, ContextLoader.class.getClassLoader());

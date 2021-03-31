@@ -20,6 +20,16 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 /**
+ * 引导监听器，用来启动和停止Spring的根容器 {@link WebApplicationContext}
+ *
+ * 因为ContextLoaderListener实现了ServletContextListener这个接口，在web.xml配置这个监昕器，启动容器时，
+ * 就会默认执行它实现的方法，使用 ServletContextListener接口，开发者能够在为客户端请求提
+ * 供服务之前向ServletContext中添加任意的对象。这个对象在ServletContext启动的时候被初始
+ * 化，然后在ServletContext整个运行期间都是可见的 。
+ *
+ * 每一个 Web 应用者附一个 ServletContext 与之相关联。 ServletContext 对象在应用启动时被创建，
+ * 在应用关闭的时候被销毁。 ServletContext 在全局范围内有效，类似于应用中的一个全局变量。
+ *
  * Bootstrap listener to start up and shut down Spring's root {@link WebApplicationContext}.
  * Simply delegates to {@link ContextLoader} as well as to {@link ContextCleanupListener}.
  *
@@ -90,12 +100,20 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 	 * @see #contextInitialized(ServletContextEvent)
 	 * @see #contextDestroyed(ServletContextEvent)
 	 */
+	/**
+	 * 使用给定的WebApplicationContext对象初始化
+	 * 将给定的WebApplicationContext存储进父类ContextLoader中的属性中，
+	 * 用于contextInitialized方法将ServletContext存储在给定的WebApplicationContext中
+	 * @param context
+	 */
 	public ContextLoaderListener(WebApplicationContext context) {
 		super(context);
 	}
 
 
 	/**
+	 * ServletContextListener的contextInitialized在ServletContext启动之后被调用，
+	 * 并准备好处理客户端请求，此处被Spring用来初始化Spring MVC需要的WebApplicationContext
 	 * Initialize the root web application context.
 	 */
 	@Override
@@ -105,6 +123,7 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 
 
 	/**
+	 * ServletContext将要关闭的时候被调用，用于销毁ServletContext上下文
 	 * Close the root web application context.
 	 */
 	@Override
