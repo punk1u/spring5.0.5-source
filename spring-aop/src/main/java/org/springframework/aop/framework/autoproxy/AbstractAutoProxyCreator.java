@@ -248,9 +248,16 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+			/**
+			 * 判断当前的bean是否需要被代理
+			 */
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			/**
+			 * 判断当前bean将来是否能够被代理,如果是不能被代理的基础结构类（Advices、Advisors和AopInfrastructureBeans），
+			 * 则讲当前bean放入表示不可被代理的advisedBeans对象中
+			 */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -363,6 +370,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	/**
+	 * 返回给定的bean类是否表示不应被代理的基础结构类。
+	 * 默认实现将Advices、Advisors和AopInfrastructureBeans视为基础结构类。
 	 * Return whether the given bean class represents an infrastructure class
 	 * that should never be proxied.
 	 * <p>The default implementation considers Advices, Advisors and
