@@ -433,7 +433,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeansException {
 
 		Object result = existingBean;
+		/**
+		 * 执行所有直接实现了BeanPostProcessor的实现类的postProcessAfterInitialization方法
+		 */
 		for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+			/**
+			 * AbstractAutoProxyCreator的postProcessAfterInitialization负责实现代理
+			 */
 			Object current = beanProcessor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -988,7 +994,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				/**
-				 * 通过调用SmartInstantiationAwareBeanPostProcessor后置处理器的getEarlyBeanReference方法来获取一个bean的早期引用实例
+				 * 通过调用实现了SmartInstantiationAwareBeanPostProcessor接口的后置处理器的AbstractAutoProxyCreator类的
+				 * getEarlyBeanReference方法来获取一个bean的早期引用实例（如果需要代理的话还会进行代理），以同时解决循环依赖和循环依赖时的
+				 * 代理对象的处理
+				 *
 				 */
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;

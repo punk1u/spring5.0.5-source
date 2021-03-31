@@ -34,6 +34,13 @@ public class ProxyConfig implements Serializable {
 	private static final long serialVersionUID = -8409359707199703185L;
 
 
+	/**
+	 * proxyTargetClass		目标对象特征					代理效果
+	 * true	 				目标对象实现了接口				使用CGLIB代理机制
+	 * true					目标对象没有接口(只有实现类)		使用CGLIB代理机制
+	 * false				目标对象实现了接口				使用JDK动态代理机制(代理所有实现了的接口)
+	 * false				目标对象没有接口(只有实现类)		使用CGLIB代理机制
+	 */
 	private boolean proxyTargetClass = false;
 
 	private boolean optimize = false;
