@@ -234,6 +234,9 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	private static class ServletConfigPropertyValues extends MutablePropertyValues {
 
 		/**
+		 * 对ServletConfig中存储的<init-param>中的配置参数进行封装
+		 * 程序员可以通过对requiredProperties参数的初始化来强制验证某些属性的必要性，这样，
+		 * 在封装的过程中，一旦检测到requiredProperties中的属性没有指定初始值，就会抛出异常
 		 * Create new ServletConfigPropertyValues.
 		 * @param config ServletConfig we'll use to take PropertyValues from
 		 * @param requiredProperties set of property names we need, where

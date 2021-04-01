@@ -347,9 +347,15 @@ public class DispatcherServlet extends FrameworkServlet {
 	/** Additional logger to use when no mapped handler is found for a request. */
 	protected static final Log pageNotFoundLogger = LogFactory.getLog(PAGE_NOT_FOUND_LOG_CATEGORY);
 
+	/**
+	 * 用于存储Spring MVC默认使用的各类对象信息的对象
+	 */
 	private static final Properties defaultStrategies;
 
 	static {
+		/**
+		 * 从属性文件加载默认策略实现(包括HandlerMapping、HandlerAdaptor等)
+		 */
 		// Load default strategy implementations from properties file.
 		// This is currently strictly internal and not meant to be customized
 		// by application developers.
@@ -557,6 +563,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 
 	/**
+	 * 刷新Spring在Web功能实现中所必须使用的全局变量
 	 * This implementation calls {@link #initStrategies}.
 	 */
 	@Override
@@ -565,28 +572,77 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 初始化此servlet使用的策略对象。可以在子类中重写，以便初始化进一步的策略对象。
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		/**
+		 * 初始化MultipartResolver(文件上传功能)
+		 */
 		initMultipartResolver(context);
+		/**
+		 * 初始化LocaleResolver(国际化配置)
+		 */
 		initLocaleResolver(context);
+		/**
+		 * 初始化ThemeResolver
+		 */
 		initThemeResolver(context);
+		/**
+		 * 初始化HandlerMappings（用于处理客户端请求）
+		 * 当客户端发出Request时DispatcherServlet会将Request提交给HandlerMapping，
+		 * 然后HandlerMapping根据Web Application Context的配置来回传给DispatcherServlet相应的Controller
+		 */
 		initHandlerMappings(context);
+		/**
+		 * 初始化HandlerAdapters(默认使用SimpleControllerHandlerAdapter)
+		 */
 		initHandlerAdapters(context);
+		/**
+		 * 初始化HandlerExceptionResolvers(用于处理异常)
+		 */
 		initHandlerExceptionResolvers(context);
+		/**
+		 * 初始化RequestToViewNameTranslator
+		 * 当Controller处理器方法没有返回一个View对象或逻辑视图名称，并且在该方法中没有直接往response的输出流里面写数据
+		 * 的时候，Spring就会采用约定好的方式提供一个逻辑视图名称
+		 */
 		initRequestToViewNameTranslator(context);
+		/**
+		 * 初始化ViewResolvers
+		 * 当Controller将请求处理结果放入到ModelAndView中以后，DispatcherServlet会根据ModelAndView选择合适的视图进行渲染
+		 * 这个逻辑就在ViewResolver中
+		 *
+		 * 配置ViewResolver的方式：
+		 * <bean class ＝ ”org.Sprinqframework.web.servlet.view.InternalResourceViewResolver">
+		 *     <property name=”prefix” value =”/WEB-INF/views/” />
+		 *     <property name=”suffix" value=”.jsp” />
+		 * </bean>
+		 */
 		initViewResolvers(context);
+		/**
+		 * 初始化FlashMapManager
+		 */
 		initFlashMapManager(context);
 	}
 
 	/**
+	 * 初始化MultipartResolver
+	 * MultipartResolver主要用来处理文件上传。默认情况下，Spring是没有multipart处理的。
+	 * 如果想使用multipart处理，需要在Web应用的上下文中添加multipart解析器。这样，每个请求就会被检查是否包含multipart。
+	 * 如果请求中包含multipart，上下文中定义的MultipartResolver就好解析它
+	 *
+	 * 初始化该类使用的多部件解析器。如果在BeanFactory中没有为此命名空间定义具有给定名称的bean，则不提供multipart的处理。
 	 * Initialize the MultipartResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * no multipart handling is provided.
 	 */
 	private void initMultipartResolver(ApplicationContext context) {
 		try {
+			/**
+			 * 提取配置文件中设置的MultipartResolver类型的bean（如果有设置的话）来初始化MultipartResolver
+			 */
 			this.multipartResolver = context.getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using MultipartResolver [" + this.multipartResolver + "]");
@@ -609,6 +665,9 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	private void initLocaleResolver(ApplicationContext context) {
 		try {
+			/**
+			 * 提取配置文件中设置的LocaleResolver类型的bean（如果有设置的话）来初始化LocaleResolver
+			 */
 			this.localeResolver = context.getBean(LOCALE_RESOLVER_BEAN_NAME, LocaleResolver.class);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using LocaleResolver [" + this.localeResolver + "]");
@@ -654,6 +713,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
+		/**
+		 * 默认情况下，Spring MVC将加载当前系统中所有实现了HandlerMapping接口的bean。
+		 * 如果只期望Spring MVC加载指定的handlerMapping时，可以修改DispatcherServlet的初始参数，
+		 * 将detectAllHandlerMappings的值设置为false：
+		 * <init-param>
+		 *     <param-name>detectAllHandlerMappings</param-name>
+		 *     <param-value>false</param-value>
+		 * </init-param>
+		 *
+		 * 这样，Spring MVC会查找名为"handlerMapping"的bean，并作为当前系统中唯一的handlerMapping
+		 */
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerMapping> matchingBeans =
@@ -674,6 +744,12 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 		}
 
+		/**
+		 * 上面的两种情况都找不到可用的HandlerMapping对象时，使用默认的HandlerMapping类
+		 * 默认的HandlerMapping类包括：
+		 * 	org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,
+		 * 	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+		 */
 		// Ensure we have at least one HandlerMapping, by registering
 		// a default HandlerMapping if no other mappings are found.
 		if (this.handlerMappings == null) {
@@ -685,6 +761,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 为DispatcherServlet初始化HandlerAdapter对象
 	 * Initialize the HandlerAdapters used by this class.
 	 * <p>If no HandlerAdapter beans are defined in the BeanFactory for this namespace,
 	 * we default to SimpleControllerHandlerAdapter.
@@ -692,6 +769,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	private void initHandlerAdapters(ApplicationContext context) {
 		this.handlerAdapters = null;
 
+		/**
+		 * 默认情况下，Spring MVC将加载当前系统中所有实现了HandlerAdapter接口的bean。
+		 * 如果只期望Spring MVC加载指定的HandlerAdapter时，可以修改DispatcherServlet的初始参数，
+		 * 将detectAllHandlerAdapters的值设置为false：
+		 * <init-param>
+		 *     <param-name>detectAllHandlerAdapters</param-name>
+		 *     <param-value>false</param-value>
+		 * </init-param>
+		 *
+		 * 这样，Spring MVC会查找名为"handlerAdapter"的bean，并作为当前系统中唯一的HandlerAdapter
+		 */
 		if (this.detectAllHandlerAdapters) {
 			// Find all HandlerAdapters in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerAdapter> matchingBeans =
@@ -712,6 +800,20 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 		}
 
+		/**
+		 * 上面的两种情况都找不到可用的HandlerAdapter对象时，使用默认的HandlerAdapter类
+		 * 默认的HandlerAdapter包括
+		 * 	org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter,
+		 * 		HTTP请求处理器适配器仅仅支持对HTTP请求处理器的适配。它简单地将HTTP请求对象和响应对象传递给HTTP请求处理器的实现，
+		 * 		它并不需要返回值。主要应用在基于HTTP的远程调用的实现上
+		 * 	org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter,
+		 * 		将HTTP请求适配到一个控制器的实现进行处理。这里控制器的实现是一个简单的控制器接口的实现。
+		 * 	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+		 * 		这个类的实现是基于注解的实现，它需要结合注解方法映射和注解方法处理器协同工作 。
+		 * 		它通过解析声明在注解控制器的请求映射信息来解析相应的处理器方法来处理当前的 HTTP 请
+		 * 		求 。 在处理的过程中，它通过反射来发现探测处理器方法的参数，调用处理器方法，并且映射
+		 * 		返回值到模型和控制器对象，最后返回模型和控制器对象给作为主控制器的派遣器 Servlet。
+		 */
 		// Ensure we have at least some HandlerAdapters, by registering
 		// default HandlerAdapters if no other adapters are found.
 		if (this.handlerAdapters == null) {
@@ -900,6 +1002,9 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 为给定的策略接口创建默认策略对象的列表。
+	 * 默认实现使用“DispatcherServlet.properties文件文件（与DispatcherServlet类在同一个包中）来确定类名。
+	 * 它通过上下文的BeanFactory实例化strategy对象。
 	 * Create a List of default strategy objects for the given strategy interface.
 	 * <p>The default implementation uses the "DispatcherServlet.properties" file (in the same
 	 * package as the DispatcherServlet class) to determine the class names. It instantiates

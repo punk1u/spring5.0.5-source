@@ -212,6 +212,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	/** If the WebApplicationContext was injected via {@link #setApplicationContext} */
 	private boolean webApplicationContextInjected = false;
 
+	/**
+	 * 用于判断onRefresh()方法是否已被调用
+	 */
 	/** Flag used to detect whether onRefresh has already been called */
 	private boolean refreshEventReceived = false;
 
@@ -484,6 +487,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 
 	/**
+	 * 对{@link HttpServletBean}中这个方法的重写，在所有属性设置完成后执行。
+	 * 完成创建WebApplicationContext
 	 * Overridden method of {@link HttpServletBean}, invoked after any bean properties
 	 * have been set. Creates this servlet's WebApplicationContext.
 	 */
@@ -497,6 +502,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		try {
 			this.webApplicationContext = initWebApplicationContext();
+			// 设计为子类覆盖
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -512,6 +518,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	}
 
 	/**
+	 * 初始化WebApplicationContext
+	 * 创建或刷新WebApplicationContext实例并对Servlet功能所使用的变量进行初始化
 	 * Initialize and publish the WebApplicationContext for this servlet.
 	 * <p>Delegates to {@link #createWebApplicationContext} for actual creation
 	 * of the context. Can be overridden in subclasses.
@@ -526,6 +534,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		WebApplicationContext wac = null;
 
 		if (this.webApplicationContext != null) {
+			/**
+			 * this.webApplicationContext不为null，说明已经通过构造函数初始化完成了
+			 */
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
 			if (wac instanceof ConfigurableWebApplicationContext) {
@@ -538,22 +549,46 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 						// the root application context (if any; may be null) as the parent
 						cwac.setParent(rootContext);
 					}
+					/**
+					 * 刷新上下文环境
+					 */
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
 		}
+		/**
+		 * 没有通过构造方法初始化时（wac为空时）
+		 */
 		if (wac == null) {
 			// No context instance was injected at construction time -> see if one
 			// has been registered in the servlet context. If one exists, it is assumed
 			// that the parent context (if any) has already been set and that the
 			// user has performed any initialization such as setting the context id
+			/**
+			 * 根据contextAttribute属性构建一个新的WebApplicationContext
+			 * 通过在 web.xml 文件中配置的 servlet 参数 contextAttribute 来查找 ServletContext 中对应的
+			 * 属性，默认为 WebApplicationContext.class.getName() ＋ ” .ROOT”，也就是在 ContextLoaderListener
+			 * 加载时会创建 WebApp licationContext 实例，并将实例以 WebApp licationContext.c l ass.getName()
+			 * ＋”.ROOT”为key放入ServletContext中，
+			 * 也可以重写初始化逻辑使用自己创建的WebApplicationContext,并在servlet的配置中通过初始化参数contextAttribute
+			 * 指定key 。
+			 */
 			wac = findWebApplicationContext();
 		}
+		/**
+		 * 如果通过以上两种方式并没有找到任何突破，只能重新创建新的实例了
+		 * 创建新的实例后，也会使用公共父类AbstractApplicationContext提供的refresh()方法进行配置文件加载
+		 */
 		if (wac == null) {
 			// No context instance is defined for this servlet -> create a local one
 			wac = createWebApplicationContext(rootContext);
 		}
 
+		/**
+		 * 如果还没有调用onRefresh()方法，调用
+		 * onRefresh()方法用于刷新Spring在Web功能实现中所必须使用的全局变量
+		 * 在子类DispatcherServlet中进行了重写
+		 */
 		if (!this.refreshEventReceived) {
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
@@ -583,6 +618,16 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * {@code WebApplicationContext} retrieval strategy.
 	 * @return the WebApplicationContext for this servlet, or {@code null} if not found
 	 * @see #getContextAttribute()
+	 */
+	/**
+	 *  根据contextAttribute属性构建一个新的WebApplicationContext
+	 * 	通过在 web.xml 文件中配置的 servlet 参数 contextAttribute 来查找 ServletContext 中对应的
+	 * 	属性，默认为 WebApplicationContext.class.getName() ＋ ” .ROOT”，也就是在 ContextLoaderListener
+     * 加载时会创建 WebApp licationContext 实例，并将实例以 WebApp licationContext.c l ass.getName()
+     * ＋”.ROOT”为key放入ServletContext中，
+     * 也可以重写初始化逻辑使用自己创建的WebApplicationContext,并在servlet的配置中通过初始化参数contextAttribute
+     * 指定key 。
+	 * @return
 	 */
 	@Nullable
 	protected WebApplicationContext findWebApplicationContext() {
@@ -614,6 +659,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
 	 */
 	protected WebApplicationContext createWebApplicationContext(@Nullable ApplicationContext parent) {
+		/**
+		 * 获取Servlet的初始化参数contextClass，如果没有配置默认为XmlWebApplicationContext.class
+		 */
 		Class<?> contextClass = getContextClass();
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Servlet with name '" + getServletName() +
@@ -626,15 +674,27 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					"': custom WebApplicationContext class [" + contextClass.getName() +
 					"] is not of type ConfigurableWebApplicationContext");
 		}
+		/**
+		 * 通过反射方式实例化contextClass
+		 */
 		ConfigurableWebApplicationContext wac =
 				(ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
-
 		wac.setEnvironment(getEnvironment());
+		/**
+		 * parent为在ContextLoaderListener中创建的实例
+		 * 在ContextLoaderListener加载的时候初始化的WebApplicationContext类型实例
+		 */
 		wac.setParent(parent);
+		/**
+		 * 获取contextConfigLocation属性，配置在Servlet初始化参数中
+		 */
 		String configLocation = getContextConfigLocation();
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
+		/**
+		 * 初始化Spring环境包括加载配置文件等
+		 */
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -669,6 +729,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+		/**
+		 * 加载配置文件及整合parent到wac
+		 */
 		wac.refresh();
 	}
 
