@@ -75,14 +75,54 @@ import org.springframework.web.util.WebUtils;
  * that distinguishes it from other request-driven web MVC frameworks:
  *
  * 它基于JavaBeans配置机制。
- * <ul>
- * <li>It is based around a JavaBeans configuration mechanism.
- *
  * 它可以使用任何{@link HandlerMapping}实现（预构建或作为应用程序的一部分提供）来控制请求到处理程序对象的路由。
  * 默认值为{@link org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping}以及
  * {@link org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping}.
  * HandlerMapping对象可以在servlet的应用程序上下文中定义为bean，实现HandlerMapping接口，
  * 覆盖默认HandlerMapping（如果存在）。HandlerMappings可以被赋予任何bean名称（它们是按类型测试的）。
+ *
+ * 它可以使用任何{@link HandlerAdapter}；这允许使用任何处理程序接口。
+ * 默认适配器是{@link org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter}，
+ * {@link org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter}，
+ * 用于Spring的{@link org.springframework.web.HttpRequestHandler}和
+ * {@link org.springframework.web.servlet.mvc.Controller}接口。
+ * 默认的{@link org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter}
+ * 也将注册。handleAdapter对象可以作为bean添加到应用程序上下文中，
+ * 从而覆盖默认的handleAdapter。与HandlerMappings一样，HandlerAdapter可以被赋予任何bean名称（它们是按类型测试的）。
+ *
+ * 调度器的异常解决策略可以通过{@link HandlerExceptionResolver}指定，例如将某些异常映射到错误页。
+ * 默认值为{@link org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver}，
+ * {@link org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver}和
+ * {@link org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver}。
+ * 这些handlerExceptionResolver可以通过应用程序上下文重写。
+ * HandlerExceptionResolver可以被赋予任何bean名称（它们是按类型测试的）。
+ *
+ * 它的视图解析策略可以通过{@link ViewResolver}实现指定，将符号视图名称解析为视图对象。默认值为
+ * {@link org.springframework.web.servlet.view.InternalResourceViewResolver}.
+ * ViewResolver对象可以作为bean添加到应用程序上下文中，从而覆盖默认的ViewResolver。
+ * ViewResolver可以被赋予任何bean名称（它们是按类型测试的）。
+ *
+ * 如果用户未提供{@link View}或视图名称，则 {@link RequestToViewNameTranslator}将当前请求转换为视图名称。
+ * 对应的bean名称是“viewNameTranslator”；
+ * 默认值是{@link org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator}
+ *
+ * 调度器解决多部分请求的策略由 {@link org.springframework.web.multipart.MultipartResolver}实施。
+ * 包括Apache Commons FileUpload和Servlet 3的实现；
+ * 典型的选择是{@link org.springframework.web.multipart.commons.CommonsMultipartResolver}.
+ * multipartresolverbean名称是“MultipartResolver”；默认值是none
+ *
+ * 它的区域设置解析策略由{@link LocaleResolver}决定。
+ * 开箱即用的实现通过HTTP接受头、cookie或会话工作。LocaleResolver bean名称是“LocaleResolver”；默认值是
+ * {@link org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver}
+ *
+ * 它的主题解析策略由{@link ThemeResolver}决定。
+ * 包括固定主题、cookie和会话存储的实现。ThemeResolver bean名称是“ThemeResolver”；默认值是
+ * {@link org.springframework.web.servlet.theme.FixedThemeResolver}.
+ *
+ * <ul>
+ * <li>It is based around a JavaBeans configuration mechanism.
+ *
+ *
  *
  *
  * <li>It can use any {@link HandlerMapping} implementation - pre-built or provided as part
@@ -166,6 +206,27 @@ import org.springframework.web.util.WebUtils;
  * @see org.springframework.web.HttpRequestHandler
  * @see org.springframework.web.servlet.mvc.Controller
  * @see org.springframework.web.context.ContextLoaderListener
+ */
+
+/**
+ * DispatcherServlet是Servlet接口的实现类
+ *
+ * Servlet基于HTTP协议运行，Servlet的生命周期是由Servlet的容器来控制。可以分为3个阶段：
+ * 1、初始化
+ * 		Servlet容器加载Servlet类，读取Servlet类的.class文件中的数据
+ * 		Servlet容器创建一个ServletConfig对象。ServletConfig对象包含了servlet的初始化配置信息
+ * 		Servlet容器创建一个Servlet对象
+ * 		Servlet容器调用Servlet对象的init方法进行初始化
+ * 2、运行
+ * 		当Servlet容器接受到请求时，针对这个请求创建ServletRequest和ServletResponse对象。然后调用Service方法并把
+ * 		这两个参数传递过去。Service方法通过ServletRequest对象获得请求的信息。并处理该请求。再通过ServletResponse对象生成这个请求的
+ * 		响应结果。然后销毁ServletRequest和ServletResponse对象。不管是get请求还是post请求都是这样
+ * 3、销毁
+ * 		当Web应用被终止时，servlet容器会先调用servlet对象的destrory方法，然后再销毁servlet
+ * 		对象，同时也会销毁与 servlet 对象相关联的 servletConfig 对象 。 我们可以在 destroy 方法的实
+ * 		现中，释放 servlet 所占用的资源，如关闭数据库连接，关闭文件输入输出 流等 。
+ *
+ *
  */
 @SuppressWarnings("serial")
 public class DispatcherServlet extends FrameworkServlet {
