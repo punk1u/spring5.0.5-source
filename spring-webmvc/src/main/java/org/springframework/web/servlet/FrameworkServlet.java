@@ -916,6 +916,10 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	}
 
 	/**
+	 * 处理实现Servlet规范中规定的doGet()方法
+	 *
+	 * 简单地将GET请求委托给processRequest方法解决
+	 *
 	 * Delegate GET requests to processRequest/doService.
 	 * <p>Will also be invoked by HttpServlet's default implementation of {@code doHead},
 	 * with a {@code NoBodyResponse} that just captures the content length.
@@ -930,6 +934,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	}
 
 	/**
+	 * 处理实现Servlet规范中规定的doPost()方法
+	 *
+	 * 简单地将POST请求委托给processRequest方法解决
 	 * Delegate POST requests to {@link #processRequest}.
 	 * @see #doService
 	 */
@@ -1012,6 +1019,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	}
 
 	/**
+	 * 处理此请求，发布事件而不管结果如何。
+	 * 实际的事件处理由抽象的{@link #doService}模板方法执行。
 	 * Process this request, publishing an event regardless of the outcome.
 	 * <p>The actual event handling is performed by the abstract
 	 * {@link #doService} template method.
@@ -1019,9 +1028,16 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
+		/**
+		 * 记录当前时间，用于计算web请求的处理时间
+		 */
 		long startTime = System.currentTimeMillis();
 		Throwable failureCause = null;
 
+		/**
+		 * 为了保证当前线程的LocaleContext以及RequestAttributes可以在当前请求后还能恢复，提取当前线程的两个属性.
+		 * 然后根据当前 request 创建对应的 LocaleContext 和 RequestAttributes ，并绑定到当前线程
+		 */
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
 		LocaleContext localeContext = buildLocaleContext(request);
 
@@ -1034,6 +1050,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
+			/**
+			 * 将请求委托给doService方法进一步处理
+			 */
 			doService(request, response);
 		}
 		catch (ServletException | IOException ex) {
@@ -1046,6 +1065,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		}
 
 		finally {
+			/**
+			 * 请求处理结束后恢复线程到原始状态
+			 */
 			resetContextHolders(request, previousLocaleContext, previousAttributes);
 			if (requestAttributes != null) {
 				requestAttributes.requestCompleted();
@@ -1065,6 +1087,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				}
 			}
 
+			/**
+			 * 请求处理结束后无论成功与否发布事件通知
+			 */
 			publishRequestHandledEvent(request, response, startTime, failureCause);
 		}
 	}
