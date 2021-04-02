@@ -338,6 +338,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
 
 	/**
+	 * 查找给定请求的处理程序，如果找不到特定的处理程序，则返回默认处理程序。
 	 * Look up a handler for the given request, falling back to the default
 	 * handler if no specific one is found.
 	 * @param request current HTTP request
@@ -347,10 +348,19 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		/**
+		 * 根据request获取对应的handler
+		 */
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
+			/**
+			 * 如果没有对应request的handler则使用默认的handler
+			 */
 			handler = getDefaultHandler();
 		}
+		/**
+		 * 如果也没提供默认的handler则无法继续处理返回null
+		 */
 		if (handler == null) {
 			return null;
 		}
