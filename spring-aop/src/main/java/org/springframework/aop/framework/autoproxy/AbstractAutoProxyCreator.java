@@ -356,6 +356,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 		/**
 		 * 判断该bean是否需要创建代理，如果不需要创建代理，直接返回该原始bean
+		 * this.advisedBeans中在第一次调用Bean后置处理器的时候已经存储了这个bean对象
+		 * 是否需要被创建代理，因此这里可以直接判断
 		 */
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
@@ -368,6 +370,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy if we have advice.
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
+			/**
+			 * 标记这个bean已经完成代理了，避免重复创建
+			 */
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 			/**
 			 * 真正创建代理
