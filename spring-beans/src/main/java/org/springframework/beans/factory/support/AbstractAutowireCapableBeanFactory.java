@@ -1218,10 +1218,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Shortcut when re-creating the same bean...
+		/**
+		 * 表示正在被创建的对象的相应的构造方法没有被解析过
+		 * 因为这里是通过反射方式创建相应的对象，所以这里需要先找到对应对象的构造方法
+		 */
 		boolean resolved = false;
 		boolean autowireNecessary = false;
+		/**
+		 * args基本上都是为空的，除非在getBean的时候手动传入了参数
+		 */
 		if (args == null) {
+			/**
+			 * 加锁
+			 */
 			synchronized (mbd.constructorArgumentLock) {
+				/**
+				 * 如果BeanDefinition中已经存放了解析出的这个bean的构造方法或工厂方法
+				 * 其中，构造方法用于创建通过@Component等注解标注的bean的初始对象。
+				 * 工厂方法（FactoryMethod）则用于创建通过@Bean注解标注的bean的初始对象，
+				 * 虽然从方法的角度上看，一个是类的构造方法，一个是类的普通方法，但是最终目的都是创建bean对象。
+				 * 所以在创建对象的时候，意义是几乎相同的(在BeanDefinition中存储到了一起)
+				 */
 				if (mbd.resolvedConstructorOrFactoryMethod != null) {
 					resolved = true;
 					autowireNecessary = mbd.constructorArgumentsResolved;

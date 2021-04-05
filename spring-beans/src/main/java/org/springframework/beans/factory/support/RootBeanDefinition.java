@@ -87,6 +87,15 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	/** Common lock for the four constructor fields below */
 	final Object constructorArgumentLock = new Object();
 
+	/**
+	 * 用于缓存已经解析出的构造函数或工厂方法的包可见字段
+	 *
+	 * 如果BeanDefinition中已经存放了解析出的这个bean的构造方法或工厂方法
+	 * 其中，构造方法用于创建通过@Component等注解标注的bean的初始对象。
+	 * 工厂方法（FactoryMethod）则用于创建通过@Bean注解标注的bean的初始对象，
+	 * 虽然从方法的角度上看，一个是类的构造方法，一个是类的普通方法，但是最终目的都是创建bean对象。
+	 * 所以在创建对象的时候，意义是几乎相同的(在BeanDefinition中存储到了一起)
+	 */
 	/** Package-visible field for caching the resolved constructor or factory method */
 	@Nullable
 	Executable resolvedConstructorOrFactoryMethod;
