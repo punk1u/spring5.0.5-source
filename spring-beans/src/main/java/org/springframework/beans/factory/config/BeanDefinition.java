@@ -245,6 +245,9 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	void setFactoryMethodName(@Nullable String factoryMethodName);
 
 	/** 返回FactoryMethod
+	 * 比如在一个bean中，通过@Bean注解标注的方法声明了其他bean对象。
+	 * 那么这个方法即为可以生成bean对象的FactoryMethod工厂方法。
+	 * 通过getFactoryMethodName()方法获取
 	 * Return a factory method, if any.
 	 */
 	@Nullable
