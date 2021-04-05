@@ -565,6 +565,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		if (instanceWrapper == null) {
 			/**
+			 * 第二次调用后置处理器
+			 *
 			 * 创建bean实例，并将实例包裹在BeanWrapper实现类对象中返回,里边第二次调用后置处理器
 			 * createBeanInstance中包含三种创建bean实例的方式：
 			 * 1、通过工厂方法创建bean实例
@@ -620,6 +622,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 			/**
+			 * 第四次调用后置处理器，判断是否需要aop
+			 *
 			 * 将当前bean放入三级缓存中
 			 * getEarlyBeanReference方法中第四次执行bean后置处理器，处理循环依赖
 			 * 因为到目前为止，产生的bean对象只是半成品，还没有完成依赖注入等步骤，所以这个
