@@ -1217,6 +1217,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return instantiateUsingFactoryMethod(beanName, mbd, args);
 		}
 
+		/**
+		 * 重新创建相同bean对象的快捷方式（原型模式下不需要再次解析bean的构造方法和构造方法的参数）
+		 */
 		// Shortcut when re-creating the same bean...
 		/**
 		 * 表示正在被创建的对象的相应的构造方法没有被解析过
@@ -1238,13 +1241,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				 * 工厂方法（FactoryMethod）则用于创建通过@Bean注解标注的bean的初始对象，
 				 * 虽然从方法的角度上看，一个是类的构造方法，一个是类的普通方法，但是最终目的都是创建bean对象。
 				 * 所以在创建对象的时候，意义是几乎相同的(在BeanDefinition中存储到了一起)
+				 *
+				 * 当bean的作用域是原型（prototype）的时候mbd.resolvedConstructorOrFactoryMethod != null会成立
 				 */
 				if (mbd.resolvedConstructorOrFactoryMethod != null) {
 					resolved = true;
+					/**
+					 * 如果之前创建这个bean对象的时候，已经解析出了相应的构造方法的参数
+					 */
 					autowireNecessary = mbd.constructorArgumentsResolved;
 				}
 			}
 		}
+		/**
+		 * 只有在bean的作用域是原型（prototype）且是非第一次创建bean时，这个逻辑才会成立
+		 */
 		if (resolved) {
 			if (autowireNecessary) {
 				return autowireConstructor(beanName, mbd, null, null);
