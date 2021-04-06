@@ -136,8 +136,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	@Nullable
 	private ConfigurableListableBeanFactory beanFactory;
 
+	/**
+	 * 存储已经检查过Lookup方法的bean的名称的集合
+	 */
 	private final Set<String> lookupMethodsChecked = Collections.newSetFromMap(new ConcurrentHashMap<>(256));
 
+	/**
+	 * 已经被推断完成的类和该类被推断出来的构造方法映射集合
+	 */
 	private final Map<Class<?>, Constructor<?>[]> candidateConstructorsCache = new ConcurrentHashMap<>(256);
 
 	private final Map<String, InjectionMetadata> injectionMetadataCache = new ConcurrentHashMap<>(256);
@@ -243,6 +249,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName)
 			throws BeanCreationException {
 
+		/**
+		 * 检查给定的Class所表示的对象中是否有被Lookup注解标注的方法
+		 */
 		// Let's check for lookup methods here..
 		if (!this.lookupMethodsChecked.contains(beanName)) {
 			try {
@@ -265,9 +274,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			catch (IllegalStateException ex) {
 				throw new BeanCreationException(beanName, "Lookup method resolution failed", ex);
 			}
+			/**
+			 * 标注已经检查过当前的bean是否具有Lookup标注的方法
+			 */
 			this.lookupMethodsChecked.add(beanName);
 		}
 
+		/**
+		 * 首先尝试从Class-构造方法数组 的Map集合中尝试获取，没有获取到的话继续推断
+		 */
 		// Quick check on the concurrent map first, with minimal locking.
 		Constructor<?>[] candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 		if (candidateConstructors == null) {
@@ -277,6 +292,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				if (candidateConstructors == null) {
 					Constructor<?>[] rawCandidates;
 					try {
+						/**
+						 * 获取给定Class的所有的构造方法
+						 */
 						rawCandidates = beanClass.getDeclaredConstructors();
 					}
 					catch (Throwable ex) {
@@ -284,11 +302,27 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								"Resolution of declared constructors on bean Class [" + beanClass.getName() +
 								"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 					}
+					/**
+					 * 用于存储推断结果为合格的可以用来实例化对象的构造方法
+					 * 默认的无参构造方法不会被认为是合格的构造方法
+					 */
 					List<Constructor<?>> candidates = new ArrayList<>(rawCandidates.length);
+					/**
+					 * 表示被@Autowired注解标注且@Autowired注解的属性required值为true的构造方法
+					 */
 					Constructor<?> requiredConstructor = null;
+					/**
+					 * 表示默认的构造方法（无参构造方法）
+					 */
 					Constructor<?> defaultConstructor = null;
+					/**
+					 * 如果是Kotlin的类，解析出primary构造方法（Java类则不会解析，返回null）
+					 */
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					int nonSyntheticConstructors = 0;
+					/**
+					 * 遍历找到的所有的构造方法
+					 */
 					for (Constructor<?> candidate : rawCandidates) {
 						if (!candidate.isSynthetic()) {
 							nonSyntheticConstructors++;
@@ -296,11 +330,27 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						else if (primaryConstructor != null) {
 							continue;
 						}
+						/**
+						 * 判断这个构造方法上有没有@Autowired和@Value这两个注解
+						 * 如果有的话，返回对应的注解里的属性(只是属性，不包含值)
+						 */
 						AnnotationAttributes ann = findAutowiredAnnotation(candidate);
+						/**
+						 * 如果构造方法上没有注解及其属性
+						 */
 						if (ann == null) {
+							/**
+							 * 获取beanClass的用户类（如果没有CGLIB代理的话就是beanClass，如果有CGLIB代理的话就是
+							 * 代理类的原始父类）
+							 */
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
 							if (userClass != beanClass) {
 								try {
+									/**
+									 * 获取CGLIB代理类的原始父类并判断其中相同参数的构造方法
+									 * 上有没有@Autowired和@Value这两个注解，
+									 * 如果有的话，返回对应的注解里的属性(只是属性，不包含值)
+									 */
 									Constructor<?> superCtor =
 											userClass.getDeclaredConstructor(candidate.getParameterTypes());
 									ann = findAutowiredAnnotation(superCtor);
@@ -310,6 +360,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								}
 							}
 						}
+						/**
+						 * 如果构造方法上有@Autowired和@Value注解及其属性
+						 */
 						if (ann != null) {
 							if (requiredConstructor != null) {
 								throw new BeanCreationException(beanName,
@@ -317,23 +370,51 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 										". Found constructor with 'required' Autowired annotation already: " +
 										requiredConstructor);
 							}
+							/**
+							 * 获取解析出的构造方法上的注解@Autowired中的属性required的值
+							 */
 							boolean required = determineRequiredStatus(ann);
 							if (required) {
+								/**
+								 * 如果这个构造方法上确实有@Autowired注解且required属性为true，且除了这个构造方法外，
+								 * 之前还推断出了其他的被@Autowired注解标注的构造方法，直接抛出异常，因为有多个构造方法
+								 * 都被标注了@Autowired，不知道该使用哪一个
+								 */
 								if (!candidates.isEmpty()) {
 									throw new BeanCreationException(beanName,
 											"Invalid autowire-marked constructors: " + candidates +
 											". Found constructor with 'required' Autowired annotation: " +
 											candidate);
 								}
+								/**
+								 * 表示标注了@Autowred注解并且required属性为true且目前没有其他的标注了@Autowired注解的构造方法，
+								 * 暂时将其作为必要的构造方法
+								 */
 								requiredConstructor = candidate;
 							}
+							/**
+							 * 不管required属性是否是true，都将这个@Autowired注解标注的构造方法添加进表示推断合格的构造方法的集合中
+							 */
 							candidates.add(candidate);
 						}
+						/**
+						 * 表示这个构造方法上没有标注@Autowired注解，且是个无参构造方法，则表示它是默认的构造方法
+						 */
 						else if (candidate.getParameterCount() == 0) {
 							defaultConstructor = candidate;
 						}
 					}
+					/**
+					 * 如果经过推断存在合格的构造方法(@Autowired或@Value注解标注的构造方法)
+					 */
 					if (!candidates.isEmpty()) {
+						/**
+						 * 当这个对象中没有被@Autowired标注且required值为true标注的构造方法，
+						 * 但存在被@Autowired注解标注但requires属性为false的构造方法时，
+						 * 将默认构造函数添加到可选构造函数列表中，作为回退(
+						 * 如果这里解析出的被@Autowired注解标注但requires属性为false的构造方法后续不可用的话还可以
+						 * 使用默认的构造函数)
+						 */
 						// Add default constructor to list of optional constructors, as fallback.
 						if (requiredConstructor == null) {
 							if (defaultConstructor != null) {
@@ -348,9 +429,17 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
+					/**
+					 * 如果这个Class中只有一个构造方法，且这个构造方法是有参构造方法，则使用这个构造方法作为
+					 * 创建对象的构造方法
+					 */
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
+					/**
+					 * 这两个else if中的条件对于Java类来说不会成立（因为primaryConstructor只对Kotlin的类有效），
+					 * 所以在上面的条件不成立的情况下会直接进入到最后的else条件中(即找不到合格的可用的构造方法，返回空)
+					 */
 					else if (nonSyntheticConstructors == 2 && primaryConstructor != null
 							&& defaultConstructor != null && !primaryConstructor.equals(defaultConstructor)) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor, defaultConstructor};
@@ -507,6 +596,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 	/**
+	 * 确定带注解的字段或方法是否必须需要其依赖项。“required”项为true依赖意味着找不到依赖的bean时自动注入应该失败
+	 * 否则如果为false，没有找到bean的情况下，自动注入过程将直接跳过对应的需要自动注入的字段或需要自动注入的方法
 	 * Determine if the annotated field or method requires its dependency.
 	 * <p>A 'required' dependency means that autowiring should fail when no beans
 	 * are found. Otherwise, the autowiring process will simply bypass the field
