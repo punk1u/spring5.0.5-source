@@ -75,6 +75,9 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse == null) {
 					final Class<?> clazz = bd.getBeanClass();
+					/**
+					 * Interface接口对象不能实例化
+					 */
 					if (clazz.isInterface()) {
 						throw new BeanInstantiationException(clazz, "Specified class is an interface");
 					}
@@ -84,8 +87,16 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
 						}
 						else {
+							/**
+							 * 使用反射获取要实例化的bean的无参构造方法（getDeclaredConstructor()方法没有传入参数，
+							 * 代表要获取的是指定class的无参构造方法）
+							 */
 							constructorToUse =	clazz.getDeclaredConstructor();
 						}
+						/**
+						 * 将获取到的无参构造方法赋给BeanDefinition的已解析的构造方法或工厂方法参数（如果后续还需要实例化就可以直接调用，
+						 * 不需要再推断构造方法了）
+						 */
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
 					}
 					catch (Throwable ex) {
