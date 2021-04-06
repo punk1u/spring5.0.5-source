@@ -1268,6 +1268,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Need to determine the constructor...
 		/**
 		 * 第二次调用bean后置处理器、推断并决定要使用的构造方法，如果只提供了一个默认的构造方法的话，这里为空
+		 *
+		 * 如果要实例化的对象提供了多个有参构造方法，但是没有提供无参构造方法的话，会直接报错
+		 * 提供了一个有参构造方法，但是没有提供无参构造方法的话，使用提供的这个有参构造方法
+		 * 如果只提供了默认的无参构造方法的话，使用无参构造方法
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null ||
