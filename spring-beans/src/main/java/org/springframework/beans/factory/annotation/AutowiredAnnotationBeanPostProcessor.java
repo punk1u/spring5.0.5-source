@@ -319,6 +319,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					 * 如果是Kotlin的类，解析出primary构造方法（Java类则不会解析，返回null）
 					 */
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
+					/**
+					 * 用于存储这个对象的构造方法中不是合成的构造方法的个数
+					 */
 					int nonSyntheticConstructors = 0;
 					/**
 					 * 遍历找到的所有的构造方法
