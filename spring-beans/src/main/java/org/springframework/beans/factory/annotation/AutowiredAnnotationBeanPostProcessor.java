@@ -367,6 +367,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						 * 如果构造方法上有@Autowired和@Value注解及其属性
 						 */
 						if (ann != null) {
+							/**
+							 * 如果这个构造方法被@Autowired或@Value标注，且除了这个构造方法外还有其他构造方法也
+							 * 被@Autowired构造方法标注且其required属性值为true，直接抛出异常
+							 */
 							if (requiredConstructor != null) {
 								throw new BeanCreationException(beanName,
 										"Invalid autowire-marked constructor: " + candidate +
