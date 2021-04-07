@@ -108,32 +108,65 @@ class ConstructorResolver {
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
+		/**
+		 * 表示要使用的用来实例化对象的构造方法
+		 */
 		Constructor<?> constructorToUse = null;
+		/**
+		 * 用来存储最终要调用相应构造方法实例化对象时，要传给该构造方法的参数值
+		 */
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
 
+		/**
+		 * Spring启动过程的创建对象阶段时（非getBean时），这个参数都是为空的
+		 */
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
 		else {
+			/**
+			 * argsToResolve表示的是要被解析转换后才能变成最终可以使用的argsToUse的原始值。
+			 * 比如类的全路径名需要经过相应的转换才能变成对应的需要注入的类对象
+			 */
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
+				/**
+				 * 如果之前这个BeanDefinition所表示的对象已经被创建过了，则直接使用之前使用的构造方法来实例化对象
+				 */
 				constructorToUse = (Constructor<?>) mbd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse != null && mbd.constructorArgumentsResolved) {
 					// Found a cached constructor...
+					/**
+					 * 说明之前已经使用过mbd.resolvedConstructorOrFactoryMethod这个构造方法实例化相应的对象了，
+					 * 这里直接使用之前实例化对象时解析出来的参数mbd.resolvedConstructorArguments
+					 */
 					argsToUse = mbd.resolvedConstructorArguments;
+					/**
+					 * 如果之前没有留下来直接可用的参数，则尝试使用预准备的构造函数参数值列表
+					 */
 					if (argsToUse == null) {
 						argsToResolve = mbd.preparedConstructorArguments;
 					}
 				}
 			}
+			/**
+			 * 将预准备的构造函数参数值列表转换为最终可以用来传给相应的构造方法实例化对象的参数值列表
+			 */
 			if (argsToResolve != null) {
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve);
 			}
 		}
 
+		/**
+		 * 如果之前没有实例化过这个对象
+		 */
 		if (constructorToUse == null) {
 			// Need to resolve the constructor.
+			/**
+			 * 如果之前推断出的可用的构造方法数组不为空，或者这个对象设置的注入方式为自动注入，
+			 * 说明需要自动注入
+			 */
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;

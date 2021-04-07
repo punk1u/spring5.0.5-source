@@ -110,6 +110,9 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	@Nullable
 	Object[] resolvedConstructorArguments;
 
+	/**
+	 * 用于缓存部分准备好的构造函数参数的包可见字段
+	 */
 	/** Package-visible field for caching partly prepared constructor arguments */
 	@Nullable
 	Object[] preparedConstructorArguments;
