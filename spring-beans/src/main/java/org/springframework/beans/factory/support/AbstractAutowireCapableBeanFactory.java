@@ -1269,11 +1269,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		/**
 		 * 第二次调用bean后置处理器、推断并决定要使用的构造方法，如果只提供了一个默认的构造方法的话，这里为空
 		 *
-		 * 如果要实例化的对象提供了多个有参构造方法，但是没有提供无参构造方法的话，会直接报错
-		 * 提供了一个有参构造方法，但是没有提供无参构造方法的话，使用提供的这个有参构造方法
-		 * 如果只提供了默认的无参构造方法的话，使用无参构造方法
+		 * 可以有多种情况：
+		 * 	如果没有提供构造方法——可用的构造方法为null——没有提供
+		 * 	如果只提供了默认构造方法——为null
+		 * 	如果有多个构造方法——为null——因为不知道选用哪个，为null
+		 *
+		 * 	有多个构造方法，其中有一个添加了@Autowired注解，且属性required值为true，返回这个
+		 * 	如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为true，报错
+ 		 * 	如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为false，返回多个构造方法——再次推断
+ 		 * 	只提供了一个有参构造方法，返回这个有参构造方法
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		/**
+		 * 如果是手动注入，但上面又没有推断出手动注入可以使用的构造方法时，
+		 * 则会直接跳到本方法最后一行调用无参构造函数实例化对象。
+		 * 如果是自动注入（mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR）的话，
+		 * 即使上面这一步没有推断出相应的构造方法，也会再次尝试推断构造方法(找一个最优的构造方法使用)
+		 */
 		if (ctors != null ||
 				mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args))  {
@@ -1361,6 +1373,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					/**
 					 * 调用SmartInstantiationAwareBeanPostProcessor类型对象的determineCandidateConstructors方法推断
 					 * 要实例化的对象的可以用来实例化的构造方法的数组
+					 */
+					/**
+					 * 可以分为多种情况：
+					 * 如果没有提供构造方法——可用的构造方法为null——没有提供
+					 * 如果只提供了默认构造方法——为null
+					 * 如果有多个构造方法——为null——因为不知道选用哪个，为null
+					 *
+					 * 有多个构造方法，其中有一个添加了@Autowired注解，且属性required值为true，返回这个
+					 * 如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为true，报错
+					 * 如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为false，返回多个构造方法——再次推断
+					 * 只提供了一个有参构造方法，返回这个有参构造方法
 					 */
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
