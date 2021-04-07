@@ -186,6 +186,10 @@ class ConstructorResolver {
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
 				try {
+					/**
+					 * getDeclaredConstructors()包括私有的构造方法
+					 * getConstructors()只有公共的构造方法
+					 */
 					candidates = (mbd.isNonPublicAccessAllowed() ?
 							beanClass.getDeclaredConstructors() : beanClass.getConstructors());
 				}
