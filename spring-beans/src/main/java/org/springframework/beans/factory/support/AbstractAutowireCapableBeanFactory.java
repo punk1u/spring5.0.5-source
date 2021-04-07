@@ -1291,6 +1291,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args))  {
 			/**
 			 * 选择一个合理的构造方法使用给定的参数进行注入
+			 *
+			 * 需要注意的是，如果提供的构造方法有多个，但是都没有加@Autowired注解，那么这个if条件上面那行推断出的构造方法数组
+			 * 就会为null，此时如果配置的注入方式为自动注入的话（mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR），
+			 * 那么在下面这行代码中会从这些构造方法中找出构造方法中参数个数最长的那个并用来实例化对象
 			 */
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
