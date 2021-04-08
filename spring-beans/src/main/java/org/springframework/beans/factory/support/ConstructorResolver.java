@@ -109,13 +109,16 @@ class ConstructorResolver {
 		this.beanFactory.initBeanWrapper(bw);
 
 		/**
-		 * 表示要使用的用来实例化对象的构造方法
+		 * 表示最后要真正使用的用来实例化对象的构造方法
 		 */
 		Constructor<?> constructorToUse = null;
 		/**
 		 * 用来存储最终要调用相应构造方法实例化对象时，要传给该构造方法的参数值
 		 */
 		ArgumentsHolder argsHolderToUse = null;
+		/**
+		 * 参数的对象列表，真正调用构造方法传进去的参数数组
+		 */
 		Object[] argsToUse = null;
 
 		/**
@@ -126,8 +129,8 @@ class ConstructorResolver {
 		}
 		else {
 			/**
-			 * argsToResolve表示的是要被解析转换后才能变成最终可以使用的argsToUse的原始值。
-			 * 比如类的全路径名需要经过相应的转换才能变成对应的需要注入的类对象
+			 * 从缓存中获取构造方法和参数列表，如果第一次肯定是没有缓存的，
+			 * 如果是第二次，相同的这个bd肯定是可以从缓存获取的，这里如果没有缓存，本次执行完成过后会放入到缓存中
 			 */
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
@@ -159,12 +162,12 @@ class ConstructorResolver {
 		}
 
 		/**
-		 * 如果之前没有实例化过这个对象
+		 * 如果之前没有实例化过这个对象，这是第一次实例化这个对象
 		 */
 		if (constructorToUse == null) {
 			// Need to resolve the constructor.
 			/**
-			 * 如果之前推断出的可用的构造方法数组不为空，或者这个对象设置的注入方式为自动注入，
+			 * 如果之前推断出的可用的构造方法数组不为空，或者这个对象设置的注入方式为构造方法自动注入，
 			 * 说明需要自动注入
 			 */
 			boolean autowiring = (chosenCtors != null ||
@@ -175,26 +178,27 @@ class ConstructorResolver {
 			ConstructorArgumentValues resolvedValues = null;
 
 			/**
-			 * 要使用的构造方法的最小的参数个数（默认0）——用于获取参数个数最多的构造方法
+			 * 一个构造方法中最小的参数个数
+			 * 如果开发者传入了参数，那么这个值就是参数的个数，如果没有传入，那么spring就要去推导怎么取值
+			 * 比如在xml中设置了constructor-arg 中的index=‘1’，那么spring就知道这个构造函数的参数至少为2，所以这个
+			 * 值就是2，就是表示构造函数中的参数个数的最小值
 			 */
 			int minNrOfArgs;
 			/**
-			 * 如果传入的参数数组不为空，则最小的参数个数为传入的参数列表的个数
+			 * 如果开发者传入的参数数组不为空，则最小的参数个数为传入的参数列表的个数
 			 */
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
 				/**
-				 * 否则尝试获取存储在BeanDefinition中的构造方法的值(如果不是认为添加到BeanDefinition中的话，
+				 * 否则尝试获取存储在BeanDefinition中的构造方法的值(如果不是人为添加到BeanDefinition中的话，
 				 * 一般是空的)
 				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				/**
-				 * 存储在BeanDefinition中的构造方法的参数值的个数不一定就是符合对象提供的构造方法的参数需要的。
-				 * 比如，对象中提供的构造方法的最大参数个数为3个。如果通过人为的提供到BeanDefinition中的构造方法的参数列表的
-				 * 个数为4个。则认为提供的参数列表不满足要求，需要重新推断
+				 * 计算<constructor-arg 中的参数个数，得到最小的参数个数minNrOfArgs
 				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
@@ -239,6 +243,15 @@ class ConstructorResolver {
 				 */
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
+				/**
+				 * 这是一个循环，第一次循环不会进这个if，也就是说在循环中如果已经找到了一个给开发者使用的构造方法
+				 * constructorToUse，并且构造方法的参数也定了，并且找到的构造方法的参数的个数是大于当前循环的这个
+				 * 构造方法的参数就会使用，什么意思呢？
+				 * 比如有两个构造方法，一个2个参数，一个3个参数，3个参数最先执行，在第一次循环的时候固定了构造方法和参数都已经定好了
+				 * ，第二次循环的时候发现构造函数也不为空，参数也不为空，并且上一次找到的参数个数3个也大于当前循环的参数个数2个
+				 * 就进入下面的这个if，退一万步说上面的排序没有成功，那么参数个数为2先循环，那么也不会进入下面的if，还是会在第二次
+				 * 循环来决定采用了有三个参数的构造，所以这就是spring在推导构造方法的时候采用的是最多参数个数为准的构造
+				 */
 				if (constructorToUse != null && argsToUse.length > paramTypes.length) {
 					/**
 					 * 已经找到可以满足的贪心构造函数->不要再看了，只剩下不那么贪心的构造函数了。
@@ -252,15 +265,36 @@ class ConstructorResolver {
 				}
 
 				ArgumentsHolder argsHolder;
+				/**
+				 * resolvedValues这个值是在上面设置的，设置的条件就是开发者没有传入参数设置的一个对象，换句话说就是
+				 * 下面的if进入的条件就是开发者没有传入参数
+				 */
 				if (resolvedValues != null) {
 					try {
+						/**
+						 * 下面的这个逻辑就是看你有没有在构造方法上加@ConstructorProperties注解，就是设置构造方法参数
+						 * 的名字，如果设置了，就简单了，获取整个名字数组然后去bean工厂取bean就可以了，如果没有设置
+						 * 那么通过java8的提供的功能获取方法的参数名字paramNames
+						 * 说白了paramNames就是bean中的名字，通过不同的方式获取的
+						 * 		1.通过配置@ConstructorProperties得到
+						 * 		2.通过java8的方式得到
+						 */
 						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, paramTypes.length);
+						/**
+						 * 如果没有手动在构造方法上加设置构造方法参数名字的@ConstructorProperties注解，
+						 * 那么尝试通过java8的语法获得这个构造方法参数的名字
+						 */
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						/**
+						 * 通过构造方法参数的名字和类型以及构造方法本身去获取每个参数对应的value，也就是这些value都在bean工厂中
+						 * 最后返回一个argsHolder对象，作为整个构造方法，构造参数的一个对象，最后会根据权重来计算
+						 * 该使用哪个构造方法和参数,这里面也是先byType，再byName
+						 */
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring);
 					}
@@ -278,6 +312,11 @@ class ConstructorResolver {
 					}
 				}
 				else {
+					/**
+					 * 进入到这个else分支中的代码，就意味着开发者传入了构造方法需要的参数列表，
+					 * 如果传入的参数列表的长度和正在遍历的构造方法的参数长度一样的话，
+					 * 就可以直接将该参数列表封装进argsHolder中
+					 */
 					// Explicit arguments given -> arguments length must match exactly.
 					if (paramTypes.length != explicitArgs.length) {
 						continue;
@@ -285,6 +324,14 @@ class ConstructorResolver {
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
 
+				/**
+				 * 计算权重，根据权重来确定唯一的一个构造方法
+				 * isLenientConstructorResolution方法的作用：返回是在宽松模式还是在严格模式下解析构造函数
+				 * 如果是宽松模式则为true，如果是严格模式则为false
+				 *
+				 * getTypeDifferenceWeight方法的作用：获取类型差异权重
+				 * getAssignabilityWeight方法的作用：获取可分配权重
+				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
@@ -303,6 +350,7 @@ class ConstructorResolver {
 					ambiguousConstructors.add(candidate);
 				}
 			}
+
 
 			if (constructorToUse == null) {
 				if (causes != null) {
@@ -323,6 +371,9 @@ class ConstructorResolver {
 						ambiguousConstructors);
 			}
 
+			/**
+			 * 将推断出来的构造方法缓存起来，方便下次使用
+			 */
 			if (explicitArgs == null) {
 				argsHolderToUse.storeCache(mbd, constructorToUse);
 			}
@@ -332,6 +383,9 @@ class ConstructorResolver {
 			final InstantiationStrategy strategy = beanFactory.getInstantiationStrategy();
 			Object beanInstance;
 
+			/**
+			 * 最后通过构造方法，参数调用实例化完成Bean对象的赋值
+			 */
 			if (System.getSecurityManager() != null) {
 				final Constructor<?> ctorToUse = constructorToUse;
 				final Object[] argumentsToUse = argsToUse;
