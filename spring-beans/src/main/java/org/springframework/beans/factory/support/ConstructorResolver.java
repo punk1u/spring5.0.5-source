@@ -181,6 +181,10 @@ class ConstructorResolver {
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			/**
+			 * 如果之前第一次推断的时候推断出了可以使用的合格的构造方法，这里直接使用之前推断的结果进行遍历选择
+			 * 如果之前第一次没有推断出来，则获取该对象中所有定义的构造方法进行遍历选择
+			 */
 			// Take specified constructors, if any.
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
@@ -199,15 +203,28 @@ class ConstructorResolver {
 							"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 				}
 			}
+			/**
+			 * 对构造方法进行排序，排在最前面的是公共构造方法，并且排列顺序按构造方法的参数个数大小递减排序。
+			 * 公共构造方法之后，是非公共构造方法，同样按照构造方法个数递减排列
+			 */
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
+			/**
+			 * 遍历之前第一次推断构造方法时找出的候选构造方法或本方法中找到的对象的所有的构造方法
+			 */
 			for (Constructor<?> candidate : candidates) {
+				/**
+				 * 此构造方法的参数类型列表
+				 */
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
 				if (constructorToUse != null && argsToUse.length > paramTypes.length) {
+					/**
+					 * 已经找到可以满足的贪心构造函数->不要再看了，只剩下不那么贪心的构造函数了。
+					 */
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
 					break;
