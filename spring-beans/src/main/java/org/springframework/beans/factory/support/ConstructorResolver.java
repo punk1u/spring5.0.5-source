@@ -228,9 +228,16 @@ class ConstructorResolver {
 			/**
 			 * 对构造方法进行排序，排在最前面的是公共构造方法，并且排列顺序按构造方法的参数个数大小递减排序。
 			 * 公共构造方法之后，是非公共构造方法，同样按照构造方法个数递减排列
+			 *
+			 * 需要注意的是，精准的参数所在的构造方法会排在更前面
+			 * 比如，两个都只有一个参数的构造方法，第一个的参数是自定义的User对象，
+			 * 第二个的参数是Object对象，则User对象作为参数的那个构造方法排在前面
 			 */
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
+			/**
+			 * 存储不是最佳构造方法的集合
+			 */
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
@@ -247,7 +254,7 @@ class ConstructorResolver {
 				 * 这是一个循环，第一次循环不会进这个if，也就是说在循环中如果已经找到了一个给开发者使用的构造方法
 				 * constructorToUse，并且构造方法的参数也定了，并且找到的构造方法的参数的个数是大于当前循环的这个
 				 * 构造方法的参数就会使用，什么意思呢？
-				 * 比如有两个构造方法，一个2个参数，一个3个参数，3个参数最先执行，在第一次循环的时候固定了构造方法和参数都已经定好了
+				 * 比如有两个构造方法，一个2个参数，一个3个参数，3个参数的最先执行，在第一次循环的时候固定了构造方法和参数都已经定好了
 				 * ，第二次循环的时候发现构造函数也不为空，参数也不为空，并且上一次找到的参数个数3个也大于当前循环的参数个数2个
 				 * 就进入下面的这个if，退一万步说上面的排序没有成功，那么参数个数为2先循环，那么也不会进入下面的if，还是会在第二次
 				 * 循环来决定采用了有三个参数的构造，所以这就是spring在推导构造方法的时候采用的是最多参数个数为准的构造
@@ -264,6 +271,9 @@ class ConstructorResolver {
 					continue;
 				}
 
+				/**
+				 * 存储当前遍历的这个构造方法要使用的参数
+				 */
 				ArgumentsHolder argsHolder;
 				/**
 				 * resolvedValues这个值是在上面设置的，设置的条件就是开发者没有传入参数设置的一个对象，换句话说就是
@@ -291,7 +301,8 @@ class ConstructorResolver {
 							}
 						}
 						/**
-						 * 通过构造方法参数的名字和类型以及构造方法本身去获取每个参数对应的value，也就是这些value都在bean工厂中
+						 * 通过构造方法参数的名字和类型以及构造方法本身去获取每个参数对应的value，如果对应的参数是交给Spring管理的bean，
+						 * 且还没有被创建，Spring会先去尝试创建。
 						 * 最后返回一个argsHolder对象，作为整个构造方法，构造参数的一个对象，最后会根据权重来计算
 						 * 该使用哪个构造方法和参数,这里面也是先byType，再byName
 						 */
@@ -327,21 +338,39 @@ class ConstructorResolver {
 				/**
 				 * 计算权重，根据权重来确定唯一的一个构造方法
 				 * isLenientConstructorResolution方法的作用：返回是在宽松模式还是在严格模式下解析构造函数
-				 * 如果是宽松模式则为true，如果是严格模式则为false
+				 * 如果是宽松模式则为true，如果是严格模式则为false，默认为true
 				 *
 				 * getTypeDifferenceWeight方法的作用：获取类型差异权重
 				 * getAssignabilityWeight方法的作用：获取可分配权重
+				 *
+				 * 计算出当前遍历的构造方法的参数类型差异权重
 				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
+				/**
+				 * 如果表示最接近的匹配，请选择此构造函数。
+				 */
 				// Choose this constructor if it represents the closest match.
+
+				/**
+				 * 如果当前遍历的构造方法的参数类型差异权重小于之前遍历过的构造方法中最合适的构造方法的参数差异权重，
+				 * 说明当前遍历的构造方法比之前那个更加合适，将当前遍历的这个作为最佳构造方法，重复此过程直至遍历结束
+				 */
 				if (typeDiffWeight < minTypeDiffWeight) {
 					constructorToUse = candidate;
 					argsHolderToUse = argsHolder;
 					argsToUse = argsHolder.arguments;
 					minTypeDiffWeight = typeDiffWeight;
+					/**
+					 * 选择出更合适的构造方法之后，要将之前遍历时存储的多个优先级更低的构造方法集合清空
+					 */
 					ambiguousConstructors = null;
 				}
+				/**
+				 * 如果之前的遍历中已经选择了一个构造方法，并且此次遍历的构造方法的参数差异权重和之前选择的那个构造方法的参数差异权重
+				 * 相同，说明这次遍历的构造方法和之前选择的那个构造方法的优先级相同，无法在两者间做出选择，将本次遍历的构造方法和
+				 * 之前选择的构造方法都添加进表示模糊不清的构造方法的集合中
+				 */
 				else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
 					if (ambiguousConstructors == null) {
 						ambiguousConstructors = new LinkedHashSet<>();
@@ -364,6 +393,10 @@ class ConstructorResolver {
 						"Could not resolve matching constructor " +
 						"(hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)");
 			}
+			/**
+			 * 如果选择出了一个构造方法，但是除了这个构造方法，还有其他的和选择的构造方法优先级相同的构造方法，且这个对象
+			 * 的构造方法解决方案是严格模式，则抛出多个构造方法描述模糊，无法从中选择构造方法的异常
+			 */
 			else if (ambiguousConstructors != null && !mbd.isLenientConstructorResolution()) {
 				throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 						"Ambiguous constructor matches found in bean '" + beanName + "' " +
