@@ -339,6 +339,7 @@ class ConstructorResolver {
 				 * 计算权重，根据权重来确定唯一的一个构造方法
 				 * isLenientConstructorResolution方法的作用：返回是在宽松模式还是在严格模式下解析构造函数
 				 * 如果是宽松模式则为true，如果是严格模式则为false，默认为true
+				 * 这个值可以在自定义的BeanFactoryPostProcessor中获取bean对象的BeanDefinition后修改
 				 *
 				 * getTypeDifferenceWeight方法的作用：获取类型差异权重
 				 * getAssignabilityWeight方法的作用：获取可分配权重
