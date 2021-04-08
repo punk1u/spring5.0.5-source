@@ -169,15 +169,33 @@ class ConstructorResolver {
 			 */
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR);
+			/**
+			 * 存储解析出的构造方法的参数值
+			 */
 			ConstructorArgumentValues resolvedValues = null;
 
+			/**
+			 * 要使用的构造方法的最小的参数个数（默认0）——用于获取参数个数最多的构造方法
+			 */
 			int minNrOfArgs;
+			/**
+			 * 如果传入的参数数组不为空，则最小的参数个数为传入的参数列表的个数
+			 */
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				/**
+				 * 否则尝试获取存储在BeanDefinition中的构造方法的值(如果不是认为添加到BeanDefinition中的话，
+				 * 一般是空的)
+				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
+				/**
+				 * 存储在BeanDefinition中的构造方法的参数值的个数不一定就是符合对象提供的构造方法的参数需要的。
+				 * 比如，对象中提供的构造方法的最大参数个数为3个。如果通过人为的提供到BeanDefinition中的构造方法的参数列表的
+				 * 个数为4个。则认为提供的参数列表不满足要求，需要重新推断
+				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
