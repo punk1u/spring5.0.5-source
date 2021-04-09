@@ -808,6 +808,7 @@ class ConstructorResolver {
 	}
 
 	/**
+	 * 在给定已解析的构造函数参数值的情况下，创建参数数组以调用构造函数或工厂方法。
 	 * Create an array of arguments to invoke a constructor or factory method,
 	 * given the resolved constructor argument values.
 	 */
@@ -816,14 +817,33 @@ class ConstructorResolver {
 			BeanWrapper bw, Class<?>[] paramTypes, @Nullable String[] paramNames, Executable executable,
 			boolean autowiring) throws UnsatisfiedDependencyException {
 
+		/**
+		 * 获取参数类型转换器
+		 * 用途：
+		 * 比如<bean></bean>标签下的<constructor></constructor>标签中的value属性
+		 * 实际提供的参数是表示一个bean对象位置的全路径字符串，但是构造方法的参数需要的是这个bean对象，
+		 * 所以需要进行转换，就需要用到这个类型转换器
+		 */
 		TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
 
+		/**
+		 * 存储这个构造方法的参数的容器
+		 */
 		ArgumentsHolder args = new ArgumentsHolder(paramTypes.length);
 		Set<ConstructorArgumentValues.ValueHolder> usedValueHolders = new HashSet<>(paramTypes.length);
+		/**
+		 * 存储需要被自动注入到构造方法参数的bean的名字
+		 */
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
 
+		/**
+		 * 遍历这个构造方法的参数类型列表
+		 */
 		for (int paramIndex = 0; paramIndex < paramTypes.length; paramIndex++) {
+			/**
+			 * 拿到参数对象的Class类型
+			 */
 			Class<?> paramType = paramTypes[paramIndex];
 			String paramName = (paramNames != null ? paramNames[paramIndex] : "");
 			// Try to find matching constructor argument value, either indexed or generic.
@@ -946,6 +966,11 @@ class ConstructorResolver {
 		return resolvedArgs;
 	}
 
+	/**
+	 * 根据给定的构造方法重新获取构造方法，处理传入的构造方法是内部类构造方法的情况
+	 * @param constructor
+	 * @return
+	 */
 	protected Constructor<?> getUserDeclaredConstructor(Constructor<?> constructor) {
 		Class<?> declaringClass = constructor.getDeclaringClass();
 		Class<?> userClass = ClassUtils.getUserClass(declaringClass);
