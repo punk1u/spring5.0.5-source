@@ -356,6 +356,10 @@ class ConstructorResolver {
 				 * getAssignabilityWeight方法的作用：获取可分配权重
 				 *
 				 * 计算出当前遍历的构造方法的参数类型差异权重
+				 *
+				 * 需要注意的是，这里计算构造方法参数类型的权重时，参数类型越精确，则参数权重越低（即越会被选中用来实例化对象）。
+				 * 比如，两个都只有一个参数的构造方法，第一个构造方法的参数为接口A，第二个构造方法的参数则为接口A的实现类，则第二个
+				 * 构造方法的权重比第一个构造方法的权重低
 				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
