@@ -1277,7 +1277,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 * 	有多个构造方法，其中有一个添加了@Autowired注解，且属性required值为true，返回这个
 		 * 	如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为true，报错
  		 * 	如果有多个构造方法，并有多个添加了@Autowired注解，且属性required值都为false，返回多个构造方法——再次推断
- 		 * 	只提供了一个有参构造方法，返回这个有参构造方法
+ 		 * 	只提供了一个有参构造方法，返回这个有参构造方法(即使是手动装配也会进入第二次推断并实例化对象，
+		 * 	因为此时只有一个构造方法可用来实例化，所以不能使用此方法最后一行的使用默认构造方法实例化的方式，也需要推断并实例化)
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		/**
