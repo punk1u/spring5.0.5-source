@@ -43,39 +43,7 @@ compileJava {
 	}
 }
 
-compileTestJava {
-	actions = []
-	dependsOn configurations.ajc.getTaskDependencyFromProjectDependency(true, "compileTestJava")
-	dependsOn jar
 
-	def outputDir = project.sourceSets.test.java.outputDir
-	inputs.files(project.sourceSets.test.allSource + project.sourceSets.test.compileClasspath)
-	outputs.dir outputDir
-
-	sourceCompatibility = 1.8  // fixed even when general compatibility level set to e.g. 10
-	targetCompatibility = 1.8
-
-	doLast{
-		// Assemble runtime classpath from folders and JARs that actually exist
-		def runtimeClasspath = project.files(sourceSets.test.runtimeClasspath.files.findAll({ it.exists() }))
-
-		ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties",
-				classpath: configurations.ajc.asPath)
-
-		ant.iajc(source: sourceCompatibility, target: targetCompatibility,
-				maxmem: "1024m", fork: "true", Xlint: "ignore",
-				destDir: outputDir.absolutePath,
-				aspectPath: jar.archivePath,
-				inpath: configurations.ajInpath.asPath,
-				classpath: (runtimeClasspath + project.files(jar.archivePath) + configurations.rt).asPath) {
-			sourceroots {
-				sourceSets.test.java.srcDirs.each {
-					pathelement(location:it.absolutePath)
-				}
-			}
-		}
-	}
-}
 
 
 dependencies {
@@ -96,7 +64,4 @@ dependencies {
 	testCompile("javax.mail:javax.mail-api:1.6.1")
 }
 
-eclipse.project {
-	natures += "org.eclipse.ajdt.ui.ajnature"
-	buildCommands = [new org.gradle.plugins.ide.eclipse.model.BuildCommand("org.eclipse.ajdt.core.ajbuilder")]
-}
+
