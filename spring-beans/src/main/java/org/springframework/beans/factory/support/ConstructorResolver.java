@@ -274,6 +274,10 @@ class ConstructorResolver {
 					// do not look any further, there are only less greedy constructors left.
 					break;
 				}
+				/**
+				 * 如果当前遍历到的构造方法的参数个数小于上面推断出的要使用的最小的构造方法的参数个数，
+				 * 则说明当前遍历到的构造方法不符合要求，继续遍历
+				 */
 				if (paramTypes.length < minNrOfArgs) {
 					continue;
 				}
