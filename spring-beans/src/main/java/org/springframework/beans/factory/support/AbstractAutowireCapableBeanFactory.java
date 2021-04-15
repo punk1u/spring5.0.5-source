@@ -1283,8 +1283,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		/**
 		 * 如果是手动注入，但上面又没有推断出手动注入可以使用的构造方法时，
 		 * 则会直接跳到本方法最后一行调用无参构造函数实例化对象。
-		 * 如果是自动注入（mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR）的话，
-		 * 即使上面这一步没有推断出相应的构造方法，也会再次尝试推断构造方法(找一个最优的构造方法使用)
+		 * 如果是构造方法自动注入（mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR）的话，
+		 * 或者人为提供了构造方法的参数值列表,则即使上面这一步没有推断出相应的构造方法，
+		 * 也会再次尝试推断构造方法(找一个最优的构造方法使用)
 		 */
 		if (ctors != null ||
 				mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR ||
