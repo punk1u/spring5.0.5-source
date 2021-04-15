@@ -202,6 +202,9 @@ class ConstructorResolver {
 				 * 因为最终是使用mbd.getConstructorArgumentValues()（即上面的cargs）作为参数去获取，而一般是不会手动在
 				 * 自定义的BeanFactoryPostProcessor中向bean的BeanDefinition中传入参数的，所以cargs可以认为是空对象，
 				 * 所以这里的结果minNrOfArgs依然是0。
+				 *
+				 * minNrOfArgs等于人为添加到BeanDefinition中的用来实例化对象使用到的构造方法的参数列表的个数。
+				 * 用于推断实例化此对象时，需要使用到的构造方法的参数个数的最小值
 				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
