@@ -204,7 +204,8 @@ class ConstructorResolver {
 				 * 所以这里的结果minNrOfArgs依然是0。
 				 *
 				 * minNrOfArgs等于人为添加到BeanDefinition中的用来实例化对象使用到的构造方法的参数列表的个数。
-				 * 用于推断实例化此对象时，需要使用到的构造方法的参数个数的最小值
+				 * 用于推断实例化此对象时，需要使用到的构造方法的参数个数的最小值。比如说，这个对象总共有四个构造方法，
+				 * 人为提供给BeanDefinition对象中的参数列表的参数个数为2个，所以参数个数为一个和0个的两个构造方法就不会再被考虑了
 				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
