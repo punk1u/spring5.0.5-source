@@ -1204,6 +1204,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
 		}
 
+		/**
+		 * 如果在自定义的BeanFactoryPostProcessor后置处理器中向BeanDefinition中添加该bean的InstanceSupplier对象，例如：
+		 * RootBeanDefinition.setInstanceSupplier(()->new OrderService(beanFactory.getBean(UserService.class)));
+		 *
+		 * 则在执行到下面的代码时，会直接调用其中的new OrderService(beanFactory.getBean(UserService.class))这一段表达式返回对应的对象，
+		 * 不会再执行后续的推断构造方法并实例化的逻辑了。
+		 */
 		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
 		if (instanceSupplier != null) {
 			return obtainFromSupplier(instanceSupplier, beanName);
