@@ -896,6 +896,9 @@ class ConstructorResolver {
 				 * 2、不是自动注入模式或开发者（可能）传入的构造方法参数的个数和当前构造方法的参数个数相同
 				 * 说明可能当前构造方法就是开发者想要通过手动装配方式使用的构造方法，只是开发者传入的参数列表的类型和构造方法参数的类型并不完全匹配，
 				 * 尝试下使用非类型化参数值作为备选参数：可以在类型转换后匹配成功的参数类型（String->int）
+				 *
+				 * 手动装配的情况下，可能会发生开发者传入的构造方法参数值表示的是bean对象的路径名的字符串，这种情况下在上面一行
+				 * 根据索引、参数类型获取的时候可能会获取不到，所以需要再获取一次
 				 */
 				if (valueHolder == null && (!autowiring || paramTypes.length == resolvedValues.getArgumentCount())) {
 					valueHolder = resolvedValues.getGenericArgumentValue(null, null, usedValueHolders);
