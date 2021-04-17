@@ -913,12 +913,15 @@ class ConstructorResolver {
 				Object originalValue = valueHolder.getValue();
 				Object convertedValue;
 				/**
-				 * 如果这个参数值需要经过转换之后才能得到（例如，String->int），则获取转换后的值
+				 * 如果这个参数值已经是被转换过的（例如，String->int），则直接将该值作为最终结果
 				 */
 				if (valueHolder.isConverted()) {
 					convertedValue = valueHolder.getConvertedValue();
 					args.preparedArguments[paramIndex] = convertedValue;
 				}
+				/**
+				 * 代表该值还没有被转换过，尝试着进行相应的转换（如果需要转换的话），然后再把转换结果作为最终结果
+				 */
 				else {
 					MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);
 					try {
