@@ -925,6 +925,9 @@ class ConstructorResolver {
 				else {
 					MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);
 					try {
+						/**
+						 * 使用类型转换器将原始值转换为对应的需要的参数类型的值(例如String->int，表示bean对象路径的字符串->bean对象等)
+						 */
 						convertedValue = converter.convertIfNecessary(originalValue, paramType, methodParam);
 					}
 					catch (TypeMismatchException ex) {
