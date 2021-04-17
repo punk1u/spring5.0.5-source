@@ -905,6 +905,9 @@ class ConstructorResolver {
 				usedValueHolders.add(valueHolder);
 				Object originalValue = valueHolder.getValue();
 				Object convertedValue;
+				/**
+				 * 如果这个参数值需要经过转换之后才能得到（例如，String->int），则获取转换后的值
+				 */
 				if (valueHolder.isConverted()) {
 					convertedValue = valueHolder.getConvertedValue();
 					args.preparedArguments[paramIndex] = convertedValue;
@@ -932,7 +935,7 @@ class ConstructorResolver {
 				args.rawArguments[paramIndex] = originalValue;
 			}
 			/**
-			 * 说明开发者没有人为提供构造方法的参数列表，或者提供了但是不符合当前
+			 * 说明开发者没有人为提供构造方法的参数列表，或者提供了但是不符合当前这个构造方法参数类型的参数值
 			 */
 			else {
 				MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);
