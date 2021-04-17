@@ -858,21 +858,47 @@ class ConstructorResolver {
 		 */
 		for (int paramIndex = 0; paramIndex < paramTypes.length; paramIndex++) {
 			/**
-			 * 拿到参数对象的Class类型
+			 * 拿到当前遍历的构造方法参数对象的Class类型
 			 */
 			Class<?> paramType = paramTypes[paramIndex];
+			/**
+			 * 获取当前遍历的构造方法参数的参数名字
+			 */
 			String paramName = (paramNames != null ? paramNames[paramIndex] : "");
 			// Try to find matching constructor argument value, either indexed or generic.
+			/**
+			 * 存储当前正在遍历的这个构造方法参数的值
+			 */
 			ConstructorArgumentValues.ValueHolder valueHolder = null;
+			/**
+			 * resolvedValues是在之前的代码中被new出来的，所以肯定不为null
+			 */
 			if (resolvedValues != null) {
+				/**
+				 * 只有当开发人员人为地传入指定实例化对象要用的构造方法参数列表时(手动在自定义的BeanFactoryPostProcessor中向bean的BeanDefinition中传入参数或使用<constructor-arg></constructor-arg>)，
+				 * resolvedValues中的ArgumentValue才不为null，
+				 * 如果开发人员传入了构造方法的参数列表，则先尝试从中寻找和当前正在遍历的构造方法的参数类型匹配的参数值
+				 */
 				valueHolder = resolvedValues.getArgumentValue(paramIndex, paramType, paramName, usedValueHolders);
 				// If we couldn't find a direct match and are not supposed to autowire,
 				// let's try the next generic, untyped argument value as fallback:
 				// it could match after type conversion (for example, String -> int).
+				/**
+				 * 如果：
+				 * 1、在上面从开发者（可能）传入的构造方法参数列表中没有找到和当前构造方法参数类型精确匹配的参数
+				 * 2、不是自动注入模式
+				 * 3、开发者（可能）传入的构造方法参数的个数和当前构造方法的参数个数相同
+				 * 说明可能当前构造方法就是开发者想要通过手动装配方式使用的构造方法，只是开发者传入的参数列表的类型和构造方法参数的类型并不完全匹配，
+				 * 尝试下使用非类型化参数值作为备选参数：可以在类型转换后匹配成功的参数类型（String->int）
+				 */
 				if (valueHolder == null && (!autowiring || paramTypes.length == resolvedValues.getArgumentCount())) {
 					valueHolder = resolvedValues.getGenericArgumentValue(null, null, usedValueHolders);
 				}
 			}
+			/**
+			 * 如果valueHolder在这里不为空，说明开发者确实人为提供了实例化当前对象要使用的构造方法的参数列表，
+			 * 并且从中找到了当前构造方法所需要使用的参数值
+			 */
 			if (valueHolder != null) {
 				// We found a potential match - let's give it a try.
 				// Do not consider the same value definition multiple times!
@@ -905,10 +931,17 @@ class ConstructorResolver {
 				args.arguments[paramIndex] = convertedValue;
 				args.rawArguments[paramIndex] = originalValue;
 			}
+			/**
+			 * 说明开发者没有人为提供构造方法的参数列表，或者提供了但是不符合当前
+			 */
 			else {
 				MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);
 				// No explicit match found: we're either supposed to autowire or
 				// have to fail creating an argument array for the given constructor.
+				/**
+				 * 无法从开发者（可能）传入的（构造方法）参数列表找到明确的匹配参数，则说明只能通过自动装配进行对当前构造方法参数的选择装配，
+				 * 如果不是自动装配的方式，则抛出异常
+				 */
 				if (!autowiring) {
 					throw new UnsatisfiedDependencyException(
 							mbd.getResourceDescription(), beanName, new InjectionPoint(methodParam),
@@ -930,6 +963,9 @@ class ConstructorResolver {
 			}
 		}
 
+		/**
+		 * 注册这个构造方法所在的bean和这个构造方法的参数中使用的bean的依赖关系
+		 */
 		for (String autowiredBeanName : autowiredBeanNames) {
 			this.beanFactory.registerDependentBean(autowiredBeanName, beanName);
 			if (this.beanFactory.logger.isDebugEnabled()) {
