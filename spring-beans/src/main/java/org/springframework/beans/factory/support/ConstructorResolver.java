@@ -1042,6 +1042,7 @@ class ConstructorResolver {
 	}
 
 	/**
+	 * 模板方法，用于解析应自动注入的指定参数。
 	 * Template method for resolving the specified argument which is supposed to be autowired.
 	 */
 	@Nullable

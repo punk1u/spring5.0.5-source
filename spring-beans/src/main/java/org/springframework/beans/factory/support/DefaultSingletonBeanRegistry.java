@@ -451,10 +451,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
+	 * 向BeanFactory中注册两个bean之间的依赖关系（比如通过bean A是bean B的构造方法中的一个参数，则通过该构造方法
+	 * 实例化B时需要先获取A，即bean B依赖bean A）
 	 * Register a dependent bean for the given bean,
 	 * to be destroyed before the given bean is destroyed.
-	 * @param beanName the name of the bean
-	 * @param dependentBeanName the name of the dependent bean
+	 * @param beanName the name of the bean  	被依赖的bean对象
+	 * @param dependentBeanName the name of the dependent bean		依赖于被依赖对象的bean地下
 	 */
 	public void registerDependentBean(String beanName, String dependentBeanName) {
 		String canonicalName = canonicalName(beanName);
