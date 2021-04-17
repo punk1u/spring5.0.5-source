@@ -1049,6 +1049,9 @@ class ConstructorResolver {
 	protected Object resolveAutowiredArgument(MethodParameter param, String beanName,
 			@Nullable Set<String> autowiredBeanNames, TypeConverter typeConverter) {
 
+		/**
+		 * 处理特殊情况，判断当前构造方法参数类型是不是InjectionPoint
+		 */
 		if (InjectionPoint.class.isAssignableFrom(param.getParameterType())) {
 			InjectionPoint injectionPoint = currentInjectionPoint.get();
 			if (injectionPoint == null) {
@@ -1056,6 +1059,9 @@ class ConstructorResolver {
 			}
 			return injectionPoint;
 		}
+		/**
+		 * 从beanFactory中获取当前的参数对象
+		 */
 		return this.beanFactory.resolveDependency(
 				new DependencyDescriptor(param, true), beanName, autowiredBeanNames, typeConverter);
 	}
