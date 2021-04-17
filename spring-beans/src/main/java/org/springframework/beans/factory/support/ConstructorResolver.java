@@ -207,6 +207,13 @@ class ConstructorResolver {
 				 * 自定义的BeanFactoryPostProcessor中向bean的BeanDefinition中传入参数的，所以cargs可以认为是空对象，
 				 * 所以这里的结果minNrOfArgs依然是0。
 				 *
+				 * 通过自定义的BeanFactoryPostProcessor中向bean的BeanDefinition中传入要使用的构造方法的参数：
+				 * @Override
+				 * public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory){
+				 * 		GenericBeanDefinition orderService = (GenericBeanDefinition) beanFactory.getBean(OrderService.class);
+				 * 		orderService.getConstructArgumentValues().addGenericArgumentValue(beanFactory.getBean(UserService.class));
+				 * }
+				 *
 				 * minNrOfArgs等于人为添加到BeanDefinition中的用来实例化对象使用到的构造方法的参数列表的个数。
 				 * 用于推断实例化此对象时，需要使用到的构造方法的参数个数的最小值。比如说，这个对象总共有四个构造方法，
 				 * 人为提供给BeanDefinition对象中的参数列表的参数个数为2个，所以参数个数为一个和0个的两个构造方法就不会再被考虑了
