@@ -747,7 +747,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		 * 触发所有的非延迟加载单例beans的初始化，主要步骤为调用getBean
 		 */
 		for (String beanName : beanNames) {
-			// 合并父BeanDefinition
+			/**
+			 * 合并父BeanDefinition，以确保当前遍历的BeanDefinition如果设置了父BeanDefinition的话，
+			 * 最终的BeanDefinition描述的对象中可以包含父BeanDefinition描述的对象中的属性
+			 */
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			/**
 			 * bean对象被实例化的前提条件判断：
