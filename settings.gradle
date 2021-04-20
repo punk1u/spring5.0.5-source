@@ -49,4 +49,5 @@ rootProject.children.each {project ->
 	project.buildFileName = "${project.name}.gradle"
 }
 include 'mytest'
+include 'springmvc-test'
 
