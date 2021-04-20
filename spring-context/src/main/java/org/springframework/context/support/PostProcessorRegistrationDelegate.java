@@ -136,6 +136,9 @@ class PostProcessorRegistrationDelegate {
 			/**
 			 * 	先从BeanFactory中找出来同时实现了BeanDefinitionRegistryPostProcessor这个后置处理器接口和
 			 * 	PriorityOrdered接口的的实现类
+			 *
+			 * 	在其中会实现BeanDefinition的合并，合并为RootBeanDefinition，因为BeanDefinitionRegistryPostProcessor类型的对象
+			 * 	可能有父BeanDefinition，所以需要合并后才可以用来实例化相应的对象
  			 */
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
@@ -179,6 +182,8 @@ class PostProcessorRegistrationDelegate {
 
 			/**
 			 * 	再从BeanFactory中找出来同时实现了BeanDefinitionRegistryPostProcessor这个后置处理器接口和Ordered接口的的实现类
+			 *
+			 * 	被调用的getBeanNamesForType方法会再次合并BeanDefinition
 			 */
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
