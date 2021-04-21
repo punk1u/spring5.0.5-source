@@ -1,3 +1,0 @@
-<beans>
-	<componentScan package="tech.punklu.mvcdemo"></componentScan>
-</beans>
