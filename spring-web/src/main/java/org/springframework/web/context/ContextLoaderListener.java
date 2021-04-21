@@ -22,6 +22,8 @@ import javax.servlet.ServletContextListener;
 /**
  * 引导监听器，用来启动和停止Spring的根容器 {@link WebApplicationContext}
  *
+ * 在web.xml中进行配置，即可实现对Spring的根容器 {@link WebApplicationContext}的支持
+ *
  * 因为ContextLoaderListener实现了ServletContextListener这个接口，在web.xml配置这个监昕器，启动容器时，
  * 就会默认执行它实现的方法，使用 ServletContextListener接口，开发者能够在为客户端请求提
  * 供服务之前向ServletContext中添加任意的对象。这个对象在ServletContext启动的时候被初始
@@ -29,6 +31,7 @@ import javax.servlet.ServletContextListener;
  *
  * 每一个 Web 应用者附一个 ServletContext 与之相关联。 ServletContext 对象在应用启动时被创建，
  * 在应用关闭的时候被销毁。 ServletContext 在全局范围内有效，类似于应用中的一个全局变量。
+ *
  *
  * Bootstrap listener to start up and shut down Spring's root {@link WebApplicationContext}.
  * Simply delegates to {@link ContextLoader} as well as to {@link ContextCleanupListener}.
