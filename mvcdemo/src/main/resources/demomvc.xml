@@ -1,3 +1,5 @@
 <beans>
 	<componentScan package="tech.punklu.mvcdemo"></componentScan>
+
+	<view suffix=".html" prefix="/page/"> </view>
 </beans>
