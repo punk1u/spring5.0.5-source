@@ -1,26 +1,43 @@
 package tech.punklu.mvcdemo.controller;
 
-import tech.punklu.mvcdemo.annotation.Controller;
-import tech.punklu.mvcdemo.annotation.RequestMapping;
-import tech.punklu.mvcdemo.annotation.ResponseBody;
-import tech.punklu.mvcdemo.entity.UserEntity;
+import tech.punklu.mvcdemo.annotation.UserParam;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
-@RequestMapping("/testController")
-public class TestController {
+public class TestController  {
 
-	@RequestMapping("/testMapping.do")
-	@ResponseBody
-	public String test(String name, String age, UserEntity userEntity){
-		System.out.println(name);
-		System.out.println(age);
-		System.out.println(userEntity);
-		System.out.println("执行了");
-		return "testMapping.do";
-	}
 
-	@RequestMapping("/model.do")
-	public Object model(){
- 		return "index";
-	}
+
+    @RequestMapping("/test.do")
+    @ResponseBody                                                   //user 对象  Map
+    public Object test(String name, HttpServletRequest request, HttpServletResponse response ,@UserParam Map map){
+        System.out.println("调用了");
+        request.getParameter("name");
+        Map hashMap = new HashMap();
+//        {}
+        hashMap.put("key","value");
+        return  hashMap;
+    }
+
+    @RequestMapping("/model.do")
+//    @ResponseBody
+    public String model(HttpServletRequest request,HttpServletResponse response){
+        // /page/index.html
+        return "index";
+    }
+
+
+
+    @RequestMapping("/xml.do")
+    public void xml(HttpServletResponse response){
+        CreateXml.build01(response);
+    }
+
 }
