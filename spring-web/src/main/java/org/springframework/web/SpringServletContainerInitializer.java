@@ -113,6 +113,21 @@ import org.springframework.util.ReflectionUtils;
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
 	/**
+	 * 将{@code ServletContext}委托给任何在应用程序类路径上存在的{@link WebApplicationInitializer}接口的
+	 * 实现类。因为当前类声明了@{@code HandlesTypes（WebApplicationInitializer.class)}，
+	 * Servlet3.0+容器将自动扫描类路径以查找Spring的{@Code WebApplicationInitializer}接口的实现类，并提供
+	 * 将扫描出的这些WebApplicationInitializer接口的实现类添加到下面这个startUp方法的{@code webAppInitializerClasses}参数中。
+	 * 如果在类路径上找不到{@code WebApplicationInitializer}实现，此方法实际上不会被执行。
+	 * 将发出一条信息级日志消息，通知用户{@code ServletContainerInitializer}确实已被调用，
+	 * 但未找到{@code WebApplicationInitializer}实现。
+	 * 假设检测到一个或多个{@code WebApplicationInitializer}类型，
+	 * 它们将被实例化（如果@{@link org.springframework.core.annotation.Order @Order}注解
+	 * 或{@link org.springframework.core.Ordered}接口已实现）。
+	 * 然后将在每个实例上调用{@link WebApplicationInitializer#onStartup（ServletContext）}方法，
+	 * 委托{@code ServletContext}，以便每个实例可以注册和配置servlet，例如Spring的
+	 * {@code DispatcherServlet}、侦听器（如Spring的{@code ContextLoaderListener}）或任何其他Servlet API组件（如filte），
+	 * 从而实现通过代码形式（而非传统的xml）配置Servlet的目的。Spring Boot也同样使用了这个类来实现0配置
+	 *
 	 * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
 	 * implementations present on the application classpath.
 	 * <p>Because this class declares @{@code HandlesTypes(WebApplicationInitializer.class)},

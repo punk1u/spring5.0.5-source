@@ -20,10 +20,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 /**
+ * 实现这个接口，可通过重写其onStartup方法实现和通过web.xml方式同样的配置spring mvc的效果
+ *
+ * 要在Servlet3.0+环境中实现的接口，以便以编程方式配置{@link ServletContext}——与传统的{@code web.xml}相反（或可能与之结合）-基于策略的方法。
  * Interface to be implemented in Servlet 3.0+ environments in order to configure the
  * {@link ServletContext} programmatically -- as opposed to (or possibly in conjunction
  * with) the traditional {@code web.xml}-based approach.
  *
+ * 这个SPI的实现将由{@link SpringServletContainerInitializer}自动检测，
+ * 它本身由任何Servlet 3.0容器自动引导。有关此引导机制的详细信息，
+ * 请参见{@linkplain SpringServletContainerInitializer its Javadoc}。
  * <p>Implementations of this SPI will be detected automatically by {@link
  * SpringServletContainerInitializer}, which itself is bootstrapped automatically
  * by any Servlet 3.0 container. See {@linkplain SpringServletContainerInitializer its
@@ -178,6 +184,7 @@ import javax.servlet.ServletException;
 public interface WebApplicationInitializer {
 
 	/**
+	 * 实现类的此方法会在启动的时候被容器（如tomcat）自动调用，具体原理在{@linkplain SpringServletContainerInitializer its Javadoc}中
 	 * Configure the given {@link ServletContext} with any servlets, filters, listeners
 	 * context-params and attributes necessary for initializing this web application. See
 	 * examples {@linkplain WebApplicationInitializer above}.
