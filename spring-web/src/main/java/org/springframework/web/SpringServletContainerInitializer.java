@@ -109,6 +109,12 @@ import org.springframework.util.ReflectionUtils;
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
  */
+
+/**
+ * HandlesTypes是Servlet3中开始出现的注解，
+ * 用于将应用程序中定义的指定的Class表示的对象作为参数传递到ServletContainerInitializer接口的
+ * 实现类的onStartup方法的参数中，用于调用该实现类的方法以完成Servlet容器的初始化
+ */
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
