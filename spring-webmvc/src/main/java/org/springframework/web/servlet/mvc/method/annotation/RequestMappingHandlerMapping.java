@@ -197,6 +197,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 		RequestMappingInfo info = createRequestMappingInfo(method);
 		if (info != null) {
 			RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
+			/**
+			 * 将这个方法的@RequestMapping信息和它所属的Controller类上的RequestMapping信息合并
+			 */
 			if (typeInfo != null) {
 				info = typeInfo.combine(info);
 			}
@@ -221,6 +224,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 		 * 找出传入的element标注的{@link RequestMapping}的注解信息
 		 */
 		RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
+		/**
+		 * 用于判断请求中的信息是否满足当前Handler(Controller类或Controller类中的方法)的条件
+		 */
 		RequestCondition<?> condition = (element instanceof Class ?
 				getCustomTypeCondition((Class<?>) element) : getCustomMethodCondition((Method) element));
 		return (requestMapping != null ? createRequestMappingInfo(requestMapping, condition) : null);
@@ -259,6 +265,7 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	}
 
 	/**
+	 * 将RequestMapping中的信息和对应的RequestCondition中的信息封装到RequestMappingInfo对象中并返回
 	 * Create a {@link RequestMappingInfo} from the supplied
 	 * {@link RequestMapping @RequestMapping} annotation, which is either
 	 * a directly declared annotation, a meta-annotation, or the synthesized
