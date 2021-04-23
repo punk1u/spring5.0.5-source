@@ -335,6 +335,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	// Handler method lookup
 
 	/**
+	 * 为给定的Request请求对象找到一个对应的处理方法（Handler Method）
 	 * Look up a handler method for the given request.
 	 */
 	@Override
@@ -384,6 +385,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		 * 在存储URI和相应的处理该URI的方法的Map中根据URI查询相应的处理该URI的方法
 		 */
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
+		/**
+		 * 根据上一步通过URI找到对应的Mapping的结果，再通过Mapping找到对应的最终处理该URI的HandlerMethod
+		 */
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
 		}
@@ -392,6 +396,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			addMatchingMappings(this.mappingRegistry.getMappings().keySet(), matches, request);
 		}
 
+		/**
+		 * 如果待选的HandlerMethod列表不为空，则从中选出一个最合适的并返回
+		 */
 		if (!matches.isEmpty()) {
 			Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
 			matches.sort(comparator);

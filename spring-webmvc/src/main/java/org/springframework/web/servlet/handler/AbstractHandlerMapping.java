@@ -364,6 +364,9 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 		if (handler == null) {
 			return null;
 		}
+		/**
+		 * 如果对应的Handler是String字符串类型的话，尝试从Spring容器中获取该Bean对象
+		 */
 		// Bean name or resolved handler?
 		if (handler instanceof String) {
 			String handlerName = (String) handler;
