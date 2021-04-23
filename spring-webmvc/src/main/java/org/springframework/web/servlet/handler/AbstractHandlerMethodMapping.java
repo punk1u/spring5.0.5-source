@@ -48,9 +48,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
+ * 实现了{@link HandlerMapping}接口的的抽象基类，用于定义请求和{@link HandlerMethod}之间的映射。
  * Abstract base class for {@link HandlerMapping} implementations that define
  * a mapping between a request and a {@link HandlerMethod}.
  *
+ * 对于每个注册的处理程序方法(处理对应的URI的Controller类中的方法)，都使用定义映射类型{@code<T>}的详细信息的子类来维护唯一的映射。
  * <p>For each registered handler method, a unique mapping is maintained with
  * subclasses defining the details of the mapping type {@code <T>}.
  *
@@ -88,11 +90,17 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	}
 
 
+	/**
+	 * 用于判断是否需要从父Spring容器中获取相应的bean，默认为false，即Spring MVC中默认只从当前容器中获取bean实例
+	 */
 	private boolean detectHandlerMethodsInAncestorContexts = false;
 
 	@Nullable
 	private HandlerMethodMappingNamingStrategy<T> namingStrategy;
 
+	/**
+	 * 用于存储维护URI和相应的处理URI的处理程序方法（Handler Method）的所有映射的注册表，公开方法以执行查找并提供并发访问。
+	 */
 	private final MappingRegistry mappingRegistry = new MappingRegistry();
 
 
@@ -204,6 +212,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		if (logger.isDebugEnabled()) {
 			logger.debug("Looking for request mappings in application context: " + getApplicationContext());
 		}
+		/**
+		 * 拿到Spring容器中所有的bean的beanName
+		 */
 		String[] beanNames = (this.detectHandlerMethodsInAncestorContexts ?
 				BeanFactoryUtils.beanNamesForTypeIncludingAncestors(obtainApplicationContext(), Object.class) :
 				obtainApplicationContext().getBeanNamesForType(Object.class));
@@ -469,6 +480,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected abstract boolean isHandler(Class<?> beanType);
 
 	/**
+	 * 提供处理程序方法的映射。无法提供映射的方法不是处理程序方法。
 	 * Provide the mapping for a handler method. A method for which no
 	 * mapping can be provided is not a handler method.
 	 * @param method the method to provide a mapping for
@@ -504,6 +516,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 
 	/**
+	 * 用于存储维护URI和相应的处理URI的处理程序方法（Handler Method）的所有映射的注册表，公开方法以执行查找并提供并发访问。
 	 * A registry that maintains all mappings to handler methods, exposing methods
 	 * to perform lookups and providing concurrent access.
 	 *

@@ -150,6 +150,7 @@ public abstract class ApplicationObjectSupport implements ApplicationContextAwar
 	}
 
 	/**
+	 * 获取当前容器的ApplicationContext上下文对象
 	 * Obtain the ApplicationContext for actual use.
 	 * @return the ApplicationContext (never {@code null})
 	 * @throws IllegalStateException in case of no ApplicationContext set
