@@ -21,15 +21,24 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.lang.Nullable;
 
 /**
+ * 由定义请求和处理程序对象之间映射的对象实现的接口。
  * Interface to be implemented by objects that define a mapping between
  * requests and handler objects.
  *
+ * 这个类可以由应用程序开发人员实现，尽管这不是必需的，
+ * 例如{@link org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping}和
+ * {@link org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping}默认包括在Spring MVC框架中。
+ * 如果在应用程序上下文中没有注册HandlerMapping bean，则前者是默认值。
  * <p>This class can be implemented by application developers, although this is not
  * necessary, as {@link org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping}
  * and {@link org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping}
  * are included in the framework. The former is the default if no
  * HandlerMapping bean is registered in the application context.
  *
+ * HandlerMapping实现可以支持映射拦截器，但不一定要支持。处理程序将始终包装在{@link HandlerExecutionChain}实例中，
+ * 可选地附带一些{@link HandlerInterceptor}实例。
+ * DispatcherServlet将首先按给定顺序调用每个HandlerInterceptor的{@code preHandle}方法，
+ * 最后在所有{@code preHandle}方法都返回{@code true}的情况下调用处理程序本身。
  * <p>HandlerMapping implementations can support mapped interceptors but do not
  * have to. A handler will always be wrapped in a {@link HandlerExecutionChain}
  * instance, optionally accompanied by some {@link HandlerInterceptor} instances.
@@ -37,11 +46,15 @@ import org.springframework.lang.Nullable;
  * {@code preHandle} method in the given order, finally invoking the handler
  * itself if all {@code preHandle} methods have returned {@code true}.
  *
+ * 参数化这个映射的能力是这个MVC框架的一个强大而不同寻常的功能。
+ * 例如，可以基于会话状态、cookie状态或许多其他变量编写自定义映射。似乎没有其他MVC框架具有同样的灵活性。
  * <p>The ability to parameterize this mapping is a powerful and unusual
  * capability of this MVC framework. For example, it is possible to write
  * a custom mapping based on session state, cookie state or many other
  * variables. No other MVC framework seems to be equally flexible.
  *
+ * 这个接口的实现类可以实现{@link org.springframework.core.Ordered}接口，
+ * 以便能够指定排序顺序，从而指定DispatcherServlet应用的优先级。非有序实例被视为最低优先级。
  * <p>Note: Implementations can implement the {@link org.springframework.core.Ordered}
  * interface to be able to specify a sorting order and thus a priority for getting
  * applied by DispatcherServlet. Non-Ordered instances get treated as lowest priority.
