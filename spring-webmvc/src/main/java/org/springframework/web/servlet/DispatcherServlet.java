@@ -1438,6 +1438,10 @@ public class DispatcherServlet extends FrameworkServlet {
 			 *
 			 *        	}
 			 * 	  }
+			 *
+			 * 	  需要注意的是Spring MVC并没有针对静态资源的访问提供默认的HandlerMapping对象，
+			 * 	  所以在Spring MVC中默认访问不到静态资源。Spring Boot扩展了Spring MVC，提供了
+			 * 	  用于处理静态资源访问的默认HandlerMapping，所以可以访问到镜头资源
 			 */
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {
