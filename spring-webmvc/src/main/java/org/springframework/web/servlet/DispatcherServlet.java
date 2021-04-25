@@ -1423,6 +1423,21 @@ public class DispatcherServlet extends FrameworkServlet {
 		if (this.handlerMappings != null) {
 			/**
 			 * 遍历所有的Spring初始化时放置的HandlerMapping对象
+			 *
+			 * 因为要访问的URI可能位于不同方式声明的Controller中，所以需要遍历访问所有的HandlerMapping对象。
+			 * 可能声明Controller的几种方式：
+			 * 1、使用@Controller注解声明的Controller类
+			 * 2、@Component("/test.do")
+			 * 	  public class HandleController implements HttpRequestHandler{
+			 *
+			 * 	  }
+			 * 3、@Component("/user.do")
+			 * 	  public class BeanNameController implements Controller{
+			 *			@Override
+			 *        	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception{
+			 *
+			 *        	}
+			 * 	  }
 			 */
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {

@@ -22,6 +22,18 @@ import java.util.List;
 import org.springframework.util.StringUtils;
 
 /**
+ * 用于处理以下两种情况声明的的Controller
+ * 1、@Component("/test.do")
+ * 	  public class HandleController implements HttpRequestHandler{
+ *
+ * 	  }
+ * 2、@Component("/user.do")
+ * 	  public class BeanNameController implements Controller{
+ *			@Override
+ *        	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception{
+ *
+ *        	}
+ * 	  }
  * Implementation of the {@link org.springframework.web.servlet.HandlerMapping}
  * interface that map from URLs to beans with names that start with a slash ("/"),
  * similar to how Struts maps URLs to action names.
