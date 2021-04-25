@@ -22,21 +22,29 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.lang.Nullable;
 
 /**
+ * MVC框架SPI，允许核心MVC工作流的参数化。
  * MVC framework SPI, allowing parameterization of the core MVC workflow.
  *
+ * 必须为每个处理程序类型实现以处理请求的接口。此接口用于允许{@link DispatcherServlet}无限期地
+ * 可扩展。{@code DispatcherServlet}通过此接口访问所有已安装的处理程序，这意味着它不包含特定于任何处理程序类型的代码。
  * <p>Interface that must be implemented for each handler type to handle a request.
  * This interface is used to allow the {@link DispatcherServlet} to be indefinitely
  * extensible. The {@code DispatcherServlet} accesses all installed handlers through
  * this interface, meaning that it does not contain code specific to any handler type.
  *
+ * 注意，处理程序可以是{@code Object}类型。这是为了使来自其他框架的处理程序能够与此框架集成，而无需自定义编码，
+ * 并且允许不遵循任何特定Java接口的注解驱动的处理程序对象。
  * <p>Note that a handler can be of type {@code Object}. This is to enable
  * handlers from other frameworks to be integrated with this framework without
  * custom coding, as well as to allow for annotation-driven handler objects that
  * do not obey any specific Java interface.
  *
+ * 此接口不适用于应用程序开发人员。它可以用于那些想开发自己的web工作流的处理程序。
  * <p>This interface is not intended for application developers. It is available
  * to handlers who want to develop their own web workflow.
  *
+ * 注意：{@code HandlerAdapter}实现者可以实现{@link org.springframework.core.Ordered}接口，
+ * 以便能够指定{@code DispatcherServlet}应用的排序顺序（从而指定优先级）。非有序实例被视为最低优先级。
  * <p>Note: {@code HandlerAdapter} implementors may implement the {@link
  * org.springframework.core.Ordered} interface to be able to specify a sorting
  * order (and thus a priority) for getting applied by the {@code DispatcherServlet}.
@@ -50,6 +58,8 @@ import org.springframework.lang.Nullable;
 public interface HandlerAdapter {
 
 	/**
+	 * 给定一个处理程序实例，返回这个{@code HandlerAdapter}是否支持它。
+	 * 典型的handleAdapter将根据处理程序类型来决定。handleAdapter通常只支持一种处理程序类型。
 	 * Given a handler instance, return whether or not this {@code HandlerAdapter}
 	 * can support it. Typical HandlerAdapters will base the decision on the handler
 	 * type. HandlerAdapters will usually only support one handler type each.
@@ -63,6 +73,7 @@ public interface HandlerAdapter {
 	boolean supports(Object handler);
 
 	/**
+	 * 使用给定的处理程序来处理此请求。所需的工作流程可能有很大的不同。
 	 * Use the given handler to handle this request.
 	 * The workflow that is required may vary widely.
 	 * @param request current HTTP request
@@ -78,6 +89,7 @@ public interface HandlerAdapter {
 	ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception;
 
 	/**
+	 * 与HttpServlet的{@code getLastModified}方法的约定相同。如果处理程序类中不支持，则可以简单地返回-1。
 	 * Same contract as for HttpServlet's {@code getLastModified} method.
 	 * Can simply return -1 if there's no support in the handler class.
 	 * @param request current HTTP request

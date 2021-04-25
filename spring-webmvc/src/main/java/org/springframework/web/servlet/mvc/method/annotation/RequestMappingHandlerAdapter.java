@@ -97,9 +97,12 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.WebUtils;
 
 /**
+ * {@link AbstractHandlerMethodAdapter}的扩展，支持{@link RequestMapping}注解的{@code HandlerMethod}。
  * Extension of {@link AbstractHandlerMethodAdapter} that supports
  * {@link RequestMapping} annotated {@code HandlerMethod}s.
  *
+ * 可以通过{@link #setCustomArgumentResolvers}和{@link #setCustomReturnValueHandlers}添加对自定义参数和返回值类型的支持，
+ * 或者，要重新配置所有参数和返回值类型，请使用{@link #setArgumentResolvers}和{@link #setReturnValueHandlers}。
  * <p>Support for custom argument and return value types can be added via
  * {@link #setCustomArgumentResolvers} and {@link #setCustomReturnValueHandlers},
  * or alternatively, to re-configure all argument and return value types,
@@ -826,6 +829,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	}
 
 	/**
+	 * 如果需要视图解析，则调用{@link RequestMapping}处理程序方法来准备{@link ModelAndView}。
 	 * Invoke the {@link RequestMapping} handler method preparing a {@link ModelAndView}
 	 * if view resolution is required.
 	 * @since 4.2

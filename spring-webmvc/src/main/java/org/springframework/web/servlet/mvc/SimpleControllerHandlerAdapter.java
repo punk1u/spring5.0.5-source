@@ -24,6 +24,22 @@ import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
+ * 适配器将{@link Controller}接口与通用{@link org.springframework.web.servlet.DispatcherServlet}一起使用.
+ * 支持实现{@link LastModified}接口的处理程序。
+ *
+ * 这个Adapter用于处理以下这种方式声明的Controller方法：
+ * @Component("/user.do")
+ * public class BeanNameController implements Controller{
+ *
+ *
+ *
+ *     @Override
+ *     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+ *
+ *         System.out.println("beanName");
+ *         return null;
+ *     }
+ * }
  * Adapter to use the plain {@link Controller} workflow interface with
  * the generic {@link org.springframework.web.servlet.DispatcherServlet}.
  * Supports handlers that implement the {@link LastModified} interface.

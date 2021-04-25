@@ -25,6 +25,9 @@ import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
+ * 使用普通的{@link org.springframework.web.HttpRequestHandler}适配器
+ * 与泛型{@link org.springframework.web.servlet.DispatcherServlet}.
+ * 支持实现{@link LastModified}接口的处理程序。
  * Adapter to use the plain {@link org.springframework.web.HttpRequestHandler}
  * interface with the generic {@link org.springframework.web.servlet.DispatcherServlet}.
  * Supports handlers that implement the {@link LastModified} interface.
@@ -45,6 +48,16 @@ public class HttpRequestHandlerAdapter implements HandlerAdapter {
 		return (handler instanceof HttpRequestHandler);
 	}
 
+	/**
+	 * 处理请求，包含处理访问静态资源的请求，处理静态资源请求的代码逻辑在ResourceHttpRequestHandler的handleRequest中
+	 * @param request current HTTP request
+	 * @param response current HTTP response
+	 * @param handler handler to use. This object must have previously been passed
+	 * to the {@code supports} method of this interface, which must have
+	 * returned {@code true}.
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	@Nullable
 	public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)

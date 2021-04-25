@@ -63,14 +63,25 @@ import org.springframework.web.servlet.support.WebContentGenerator;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
+ * {@code HttpRequestHandler}，它根据页面速度、YSlow等准则以优化的方式提供静态资源。
  * {@code HttpRequestHandler} that serves static resources in an optimized way
  * according to the guidelines of Page Speed, YSlow, etc.
+ *
+ * {@linkplain #setLocations “locations”}属性获取Spring{@link Resource}位置的列表，
+ * 此处理程序允许从这些位置提供静态资源。可以从类路径位置提供资源，
+ * 例如“classpath:/META-INF/publicwebresources/”，这样可以方便地打包和提供jar文件中的资源，
+ * 如.js、.css和其他资源。
  *
  * <p>The {@linkplain #setLocations "locations"} property takes a list of Spring
  * {@link Resource} locations from which static resources are allowed to be served
  * by this handler. Resources could be served from a classpath location, e.g.
  * "classpath:/META-INF/public-web-resources/", allowing convenient packaging
  * and serving of resources such as .js, .css, and others in jar files.
+ *
+ * 此请求处理程序还可以配置{@link #setResourceResolvers（List）resourcesResolver}
+ * 和{@link #setResourceTransformers（List）resourceTransformer}链，
+ * 以支持所服务资源的任意解析和转换。默认情况下，{@link PathResourceResolver}只是根据配置的“位置”查找资源。
+ * 应用程序可以配置其他解析器和转换器，例如{@link VersionResourceResolver}，它可以解析和准备URL中有版本的资源的URL。
  *
  * <p>This request handler may also be configured with a
  * {@link #setResourceResolvers(List) resourcesResolver} and
@@ -80,6 +91,9 @@ import org.springframework.web.util.UrlPathHelper;
  * "locations". An application can configure additional resolvers and transformers
  * such as the {@link VersionResourceResolver} which can resolve and prepare URLs
  * for resources with a version in the URL.
+ *
+ * 这个处理程序还正确地计算{@code Last Modified}头（如果存在的话），
+ * 这样{@code 304}状态码将被适当地返回，避免了客户端已经缓存的资源的不必要的开销。
  *
  * <p>This handler also properly evaluates the {@code Last-Modified} header
  * (if present) so that a {@code 304} status code will be returned as appropriate,
@@ -420,6 +434,12 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 
 
 	/**
+	 * 处理静态文件资源请求
+	 * 检查配置的位置列表中是否存在请求的资源。如果资源不存在，{@code 404}响应将返回给客户机。
+	 * 如果资源存在，将检查请求是否存在{@code Last Modified}头，
+	 * 并将其值与给定资源的上次修改时间戳进行比较，如果{@code Last Modified}值较大，
+	 * 则返回{@code 304}状态码。如果资源比{@code Last Modified}值新，或者标头不存在，
+	 * 则资源的内容资源将被写入响应，缓存标头将在一年后过期。
 	 * Processes a resource request.
 	 * <p>Checks for the existence of the requested resource in the configured list of locations.
 	 * If the resource does not exist, a {@code 404} response will be returned to the client.

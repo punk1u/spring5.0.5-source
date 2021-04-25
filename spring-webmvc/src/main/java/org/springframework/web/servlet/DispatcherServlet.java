@@ -1173,7 +1173,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				/**
-				 * 根据当前的 handler 寻找对应的 HandlerAdapter
+				 * 根据当前的 handler 寻找对应的 HandlerAdapter，方便后续调用具体的HandlerAdaptor来处理请求
 				 */
 				// Determine handler adapter for the current request.
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
@@ -1202,7 +1202,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				/**
-				 * 真正的调用 handler进行处理 并返回视图
+				 * 真正的调用 HandlerAdapter进行处理 并返回视图
 				 */
 				// Actually invoke the handler.
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());

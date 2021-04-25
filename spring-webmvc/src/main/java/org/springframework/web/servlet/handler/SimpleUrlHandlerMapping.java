@@ -24,6 +24,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * {@link org.springframework.web.servlet.HandlerMapping}接口的实现类。用于映射URL到请求处理程序bean的接口。
+ * 支持映射到bean实例和映射到bean名称；非单例处理程序需要后者。
  * Implementation of the {@link org.springframework.web.servlet.HandlerMapping}
  * interface to map from URLs to request handler beans. Supports both mapping to bean
  * instances and mapping to bean names; the latter is required for non-singleton handlers.
