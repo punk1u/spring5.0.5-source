@@ -1478,16 +1478,24 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 根据给定的Handler返回此Handler对应的的HandlerAdapter。
 	 * Return the HandlerAdapter for this handler object.
 	 * @param handler the handler object to find an adapter for
 	 * @throws ServletException if no HandlerAdapter can be found for the handler. This is a fatal error.
 	 */
 	protected HandlerAdapter getHandlerAdapter(Object handler) throws ServletException {
 		if (this.handlerAdapters != null) {
+			/**
+			 * 遍历所有的HandlerAdapter对象
+			 */
 			for (HandlerAdapter ha : this.handlerAdapters) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing handler adapter [" + ha + "]");
 				}
+				/**
+				 * 如果这个HandlerAdapter对象能够处理传入的Handler，
+				 * 则返回这个HandlerAdapter作为处理URL的适配器类
+				 */
 				if (ha.supports(handler)) {
 					return ha;
 				}

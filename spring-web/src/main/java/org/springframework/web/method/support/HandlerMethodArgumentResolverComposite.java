@@ -31,6 +31,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
+ * 通过委托给已注册的{@link HandlerMethodArgumentResolver}列表来解析方法参数。以前解析的方法参数会被缓存以加快查找速度。
  * Resolves method parameters by delegating to a list of registered {@link HandlerMethodArgumentResolver}s.
  * Previously resolved method parameters are cached for faster lookups.
  *
@@ -42,6 +43,9 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 存储用于处理不同参数类型的参数的解析器
+	 */
 	private final List<HandlerMethodArgumentResolver> argumentResolvers = new LinkedList<>();
 
 	private final Map<MethodParameter, HandlerMethodArgumentResolver> argumentResolverCache =
@@ -100,6 +104,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 
 	/**
+	 * 给定的方法参数类型是否可以被已注册的{@link HandlerMethodArgumentResolver}支持并解析
 	 * Whether the given {@linkplain MethodParameter method parameter} is supported by any registered
 	 * {@link HandlerMethodArgumentResolver}.
 	 */
@@ -117,6 +122,9 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		/**
+		 * 根据参数类型获取处理该类型参数的解析器
+		 */
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unknown parameter type [" + parameter.getParameterType().getName() + "]");

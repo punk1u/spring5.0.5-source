@@ -43,6 +43,22 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class HttpRequestHandlerAdapter implements HandlerAdapter {
 
+	/**
+	 * 因为当前的HttpRequestHandlerAdapter适配器类处理的是如下形式声明的Controller:
+	 * @Component("/test1.do") //BeanName
+	 * public class HandleController implements HttpRequestHandler {
+	 *
+	 *
+	 *
+	 *     @Override
+	 *     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	 *         System.out.println("111");
+	 *     }
+	 * }
+	 * 所以只需要判断一下传入的Handler对象是否是实现了HttpRequestHandler接口的对象即可
+	 * @param handler handler object to check
+	 * @return
+	 */
 	@Override
 	public boolean supports(Object handler) {
 		return (handler instanceof HttpRequestHandler);

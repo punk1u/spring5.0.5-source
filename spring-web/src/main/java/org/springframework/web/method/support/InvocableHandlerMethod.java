@@ -111,6 +111,11 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 
 	/**
+	 * 在给定请求的上下文中解析其参数值后调用该方法。参数值通常通过{@link HandlerMethodArgumentResolver}解析。
+	 * 但是，{@code providedArgs}参数可以提供直接使用的参数值，即不需要参数解析。
+	 * 提供的参数值的示例包括{@link WebDataBinder}、{@link SessionStatus}或抛出的异常实例。
+	 * 在参数解析程序之前检查提供的参数值。
+	 *
 	 * Invoke the method after resolving its argument values in the context of the given request.
 	 * <p>Argument values are commonly resolved through {@link HandlerMethodArgumentResolver}s.
 	 * The {@code providedArgs} parameter however may supply argument values to be used directly,
@@ -128,11 +133,17 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		/**
+		 * 拿到方法上所有的参数
+		 */
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Invoking '" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
 					"' with arguments " + Arrays.toString(args));
 		}
+		/**
+		 * 使用参数调用最终要调用的@RequestMapping注解标注的方法
+		 */
 		Object returnValue = doInvoke(args);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Method [" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
@@ -142,22 +153,44 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	}
 
 	/**
+	 * 获取当前请求的方法参数值。
 	 * Get the method argument values for the current request.
 	 */
 	private Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		/**
+		 * 拿到方法上的形参数组
+		 */
 		MethodParameter[] parameters = getMethodParameters();
+		/**
+		 * 根据用户传入的参数数组拼接这个方法需要的实参数组
+		 */
 		Object[] args = new Object[parameters.length];
+		/**
+		 * 遍历形参数组，以按照形参数组的顺序拼接实参数组
+		 */
 		for (int i = 0; i < parameters.length; i++) {
 			MethodParameter parameter = parameters[i];
 			parameter.initParameterNameDiscovery(this.parameterNameDiscoverer);
+			/**
+			 * 先尝试直接根据形参的类型从用户提供的参数数组中查找
+			 */
 			args[i] = resolveProvidedArgument(parameter, providedArgs);
+			/**
+			 * 找到了直接继续下一个参数的拼接
+			 */
 			if (args[i] != null) {
 				continue;
 			}
+			/**
+			 * 判断正在遍历的方法参数类型是否可被已注册的方法参数解析器支持并解析
+			 */
 			if (this.argumentResolvers.supportsParameter(parameter)) {
 				try {
+					/**
+					 * 使用不同类型的处理各种方法参数类型的解析器解析正在遍历的参数的实参
+					 */
 					args[i] = this.argumentResolvers.resolveArgument(
 							parameter, mavContainer, request, this.dataBinderFactory);
 					continue;
@@ -201,11 +234,15 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 
 	/**
+	 * 使用给定的参数值调用处理程序方法。
 	 * Invoke the handler method with the given argument values.
 	 */
 	protected Object doInvoke(Object... args) throws Exception {
 		ReflectionUtils.makeAccessible(getBridgedMethod());
 		try {
+			/**
+			 * 使用反射调用最终处理方法，所需要的对象从Spring容器中获取
+			 */
 			return getBridgedMethod().invoke(getBean(), args);
 		}
 		catch (IllegalArgumentException ex) {
