@@ -456,6 +456,9 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			throws ServletException, IOException {
 
 		// For very general mappings (e.g. "/") we need to check 404 first
+		/**
+		 * 首先尝试根据Request中的URL拼接出要访问的对象的Resource对象，进而判断是否存在该对象
+		 */
 		Resource resource = getResource(request);
 		if (resource == null) {
 			logger.trace("No matching resource found - returning 404");
@@ -463,6 +466,9 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			return;
 		}
 
+		/**
+		 * 处理HTTP请求状态码中的OPTIONS的情况
+		 */
 		if (HttpMethod.OPTIONS.matches(request.getMethod())) {
 			response.setHeader("Allow", getAllowHeader());
 			return;
@@ -471,6 +477,10 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 		// Supported methods and required session
 		checkRequest(request);
 
+		/**
+		 * 将该资源的最后修改日期Last-Modified与请求中传过来的Last-Modified的值进行比较，如果日期相同，
+		 * 则认为该资源没有发生改变，直接返回
+		 */
 		// Header phase
 		if (new ServletWebRequest(request, response).checkNotModified(resource.lastModified())) {
 			logger.trace("Resource not modified - returning 304");
