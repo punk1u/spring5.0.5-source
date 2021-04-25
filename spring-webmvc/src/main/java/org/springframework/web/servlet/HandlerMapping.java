@@ -127,12 +127,19 @@ public interface HandlerMapping {
 	String PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE = HandlerMapping.class.getName() + ".producibleMediaTypes";
 
 	/**
+	 * 返回此请求的处理程序和任何拦截器。可以根据请求URL、会话状态或实现类选择的任何因素进行选择。
+	 * 返回的HandlerExecutionChain包含一个处理程序对象，而不是一个标记接口，因此处理程序不受任何约束。
+	 * 例如，可以编写HandleAdapter以允许使用另一个框架的Handler对象。
+	 *
 	 * Return a handler and any interceptors for this request. The choice may be made
 	 * on request URL, session state, or any factor the implementing class chooses.
 	 * <p>The returned HandlerExecutionChain contains a handler Object, rather than
 	 * even a tag interface, so that handlers are not constrained in any way.
 	 * For example, a HandlerAdapter could be written to allow another framework's
 	 * handler objects to be used.
+	 *
+	 * 如果找不到匹配项，则返回{@code null}。这不是一个错误。
+	 * DispatcherServlet将查询所有注册的HandlerMapping bean以查找匹配项，并且仅当没有人能够找到处理程序时才确定存在错误。
 	 * <p>Returns {@code null} if no match was found. This is not an error.
 	 * The DispatcherServlet will query all registered HandlerMapping beans to find
 	 * a match, and only decide there is an error if none can find a handler.

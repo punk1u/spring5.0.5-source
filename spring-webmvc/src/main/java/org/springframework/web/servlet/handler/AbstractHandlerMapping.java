@@ -257,6 +257,11 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	}
 
 	/**
+	 * 检测{@link MappedInterceptor}类型的bean，并将它们添加到映射的拦截器列表中。
+	 * 除了通过{@link #setInterceptors}提供的任何{@link MappedInterceptor}之外，
+	 * 默认情况下，还将从当前上下文及其祖先添加{@link MappedInterceptor}类型的所有bean。
+	 * 子类可以重写和细化此策略@param mappedInterceptors要向其中添加{@link MappedInterceptor}实例的空列表
+	 *
 	 * Detect beans of type {@link MappedInterceptor} and add them to the list of mapped interceptors.
 	 * <p>This is called in addition to any {@link MappedInterceptor}s that may have been provided
 	 * via {@link #setInterceptors}, by default adding all beans of type {@link MappedInterceptor}
@@ -270,6 +275,9 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	}
 
 	/**
+	 * 初始化指定的拦截器，检查{@link MappedInterceptor}，
+	 * 并根据需要调整{@link HandlerInterceptor}和{@link WebRequestInterceptor}。
+	 *
 	 * Initialize the specified interceptors, checking for {@link MappedInterceptor}s and
 	 * adapting {@link HandlerInterceptor}s and {@link WebRequestInterceptor}s if necessary.
 	 * @see #setInterceptors
@@ -373,7 +381,13 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		/**
+		 * 对获取到的HandlerAdapter进行处理，跟HandlerInterceptor一起封装为需要的HandlerExecutionChain对象
+		 */
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
+		/**
+		 * 处理跨域请求
+		 */
 		if (CorsUtils.isCorsRequest(request)) {
 			CorsConfiguration globalConfig = this.globalCorsConfigSource.getCorsConfiguration(request);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);
@@ -427,6 +441,9 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 				(HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
 
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
+		/**
+		 * 遍历所有的HandlerInterceptor，并将其添加到HandlerExecutionChain中
+		 */
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
 			if (interceptor instanceof MappedInterceptor) {
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;

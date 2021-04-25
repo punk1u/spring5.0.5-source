@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 /**
+ * 用于基于<a href="http://www.w3.org/TR/cors/">CORS W3C recommandation</a>.的CORS请求处理的实用程序类
  * Utility class for CORS request handling based on the
  * <a href="http://www.w3.org/TR/cors/">CORS W3C recommandation</a>.
  *
@@ -31,6 +32,7 @@ import org.springframework.http.HttpMethod;
 public abstract class CorsUtils {
 
 	/**
+	 * 如果请求是有效的CORS请求，则返回{@code true}。
 	 * Returns {@code true} if the request is a valid CORS one.
 	 */
 	public static boolean isCorsRequest(HttpServletRequest request) {
