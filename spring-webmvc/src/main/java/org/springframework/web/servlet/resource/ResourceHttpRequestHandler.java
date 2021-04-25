@@ -466,7 +466,7 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			return;
 		}
 
-		/**
+		/** TODO punk1u 分析HTTP 请求状态码 OPTIONS
 		 * 处理HTTP请求状态码中的OPTIONS的情况
 		 */
 		if (HttpMethod.OPTIONS.matches(request.getMethod())) {
@@ -479,7 +479,7 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 
 		/**
 		 * 将该资源的最后修改日期Last-Modified与请求中传过来的Last-Modified的值进行比较，如果日期相同，
-		 * 则认为该资源没有发生改变，直接返回
+		 * 则认为该资源没有发生改变，直接返回，浏览器直接使用浏览器中缓存的该静态资源的信息
 		 */
 		// Header phase
 		if (new ServletWebRequest(request, response).checkNotModified(resource.lastModified())) {
@@ -490,6 +490,10 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 		// Apply cache settings, if any
 		prepareResponse(response);
 
+		/**
+		 * 分析该资源的媒体类型，方便后续向客户端传输资源详细信息的时候一起
+		 * 告知浏览器这是什么类型的资源（HTTP标准）
+		 */
 		// Check the media type for the resource
 		MediaType mediaType = getMediaType(request, resource);
 		if (mediaType != null) {
@@ -503,6 +507,9 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			}
 		}
 
+		/**
+		 * TODO punk1u 分析HTTP 请求状态码 HEAD
+		 */
 		// Content phase
 		if (METHOD_HEAD.equals(request.getMethod())) {
 			setHeaders(response, resource, mediaType);
@@ -510,10 +517,19 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			return;
 		}
 
+		/**
+		 * 使用HttpServletResponse构造一个用于输出响应流的Spring MVC内置的对象
+		 */
 		ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
+		/**
+		 * TODO punk1u 分析HTTP HEADER中的RANGE
+		 */
 		if (request.getHeader(HttpHeaders.RANGE) == null) {
 			Assert.state(this.resourceHttpMessageConverter != null, "Not initialized");
 			setHeaders(response, resource, mediaType);
+			/**
+			 * 向响应流输出静态资源的二进制流信息
+			 */
 			this.resourceHttpMessageConverter.write(resource, mediaType, outputMessage);
 		}
 		else {
