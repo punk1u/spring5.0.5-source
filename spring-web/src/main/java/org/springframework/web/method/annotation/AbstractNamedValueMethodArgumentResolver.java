@@ -37,6 +37,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
+ * 用于从命名值解析方法参数的抽象基类。请求参数、请求头和路径变量是命名值的示例。每个都可以有一个名称、一个必需的标志和一个默认值。
  * Abstract base class for resolving method arguments from a named value.
  * Request parameters, request headers, and path variables are examples of named
  * values. Each may have a name, a required flag, and a default value.
@@ -49,6 +50,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * <li>Optionally handle a resolved value
  * </ul>
  *
+ * 默认值字符串可以包含${…}占位符和Spring表达式语言#{…}表达式。要使其工作，必须向类构造函数提供{@link ConfigurableBeanFactory}。
  * <p>A default value string can contain ${...} placeholders and Spring Expression
  * Language #{...} expressions. For this to work a
  * {@link ConfigurableBeanFactory} must be supplied to the class constructor.

@@ -48,6 +48,9 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	 */
 	private final List<HandlerMethodArgumentResolver> argumentResolvers = new LinkedList<>();
 
+	/**
+	 * 存储已经使用过的处理相应参数类型的参数解析器
+	 */
 	private final Map<MethodParameter, HandlerMethodArgumentResolver> argumentResolverCache =
 			new ConcurrentHashMap<>(256);
 
@@ -133,12 +136,19 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	}
 
 	/**
+	 * 尝试从已注册的{@link HandlerMethodArgumentResolver}解析器列表中找出一个支持给定的方法参数的解析器并返回
 	 * Find a registered {@link HandlerMethodArgumentResolver} that supports the given method parameter.
 	 */
 	@Nullable
 	private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
+		/**
+		 * 先尝试从缓存中获取给定参数的解析器
+		 */
 		HandlerMethodArgumentResolver result = this.argumentResolverCache.get(parameter);
 		if (result == null) {
+			/**
+			 * 缓存中没有则遍历已注册的参数解析器
+			 */
 			for (HandlerMethodArgumentResolver methodArgumentResolver : this.argumentResolvers) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing if argument resolver [" + methodArgumentResolver + "] supports [" +

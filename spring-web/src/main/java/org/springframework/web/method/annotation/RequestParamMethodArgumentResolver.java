@@ -48,6 +48,10 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
+ * 解析用@{@link RequestParam}注解的方法参数，{@link MultipartFile}类型的参数与Spring的{@link MultipartResolver}抽象结合使用，
+ * 以及{@code javax.servlet.http.Part}类型的参数与Servlet3.0的multipart requests结合使用。也可以在默认解析模式下创建此解析器，
+ * 在这种模式下，未使用{@link RequestParam @RequestParam}注解的简单类型（int、long等）也被视为请求参数，其参数名称派生自参数名称。
+ *
  * Resolves method arguments annotated with @{@link RequestParam}, arguments of
  * type {@link MultipartFile} in conjunction with Spring's {@link MultipartResolver}
  * abstraction, and arguments of type {@code javax.servlet.http.Part} in conjunction
@@ -55,6 +59,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  * resolution mode in which simple types (int, long, etc.) not annotated with
  * {@link RequestParam @RequestParam} are also treated as request parameters with
  * the parameter name derived from the argument name.
+ *
+ * 如果方法参数类型为{@link Map}，则使用注解中指定的名称解析请求参数字符串值。
+ * 然后通过类型转换将值转换为{@link Map}，前提是注册了合适的{@link Converter}或{@link PropertyEditor}。
+ * 或者，如果未指定请求参数名称，则使用{@link RequestParamMapMethodArgumentResolver}以映射的形式提供对所有请求参数的访问。
  *
  * <p>If the method parameter type is {@link Map}, the name specified in the
  * annotation is used to resolve the request parameter String value. The value is
@@ -64,6 +72,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * {@link RequestParamMapMethodArgumentResolver} is used instead to provide
  * access to all request parameters in the form of a map.
  *
+ * 调用{@link WebDataBinder}将类型转换应用于已解析的请求头值，这些值与方法参数类型还不匹配。
  * <p>A {@link WebDataBinder} is invoked to apply type conversion to resolved request
  * header values that don't yet match the method parameter type.
  *
