@@ -102,6 +102,9 @@ public class HandlerMethodMappingTests {
 		this.mapping.getHandlerInternal(new MockHttpServletRequest("GET", "/foo"));
 	}
 
+	/**
+	 * Spring和Spring MVC父子容器的测试方法
+	 */
 	@Test
 	public void detectHandlerMethodsInAncestorContexts() {
 		StaticApplicationContext cxt = new StaticApplicationContext();
