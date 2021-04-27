@@ -550,8 +550,14 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	}
 
 
+	/**
+	 * 初始化
+	 */
 	@Override
 	public void afterPropertiesSet() {
+		/**
+		 * 初始化ConrtrollerAdvice相关的Bean
+		 */
 		// Do this first, it may add ResponseBody advice beans
 		initControllerAdviceCache();
 
@@ -577,6 +583,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			logger.info("Looking for @ControllerAdvice: " + getApplicationContext());
 		}
 
+		/**
+		 * 从Spring容器中获取标注ControllerAdvice的bean
+		 */
 		List<ControllerAdviceBean> adviceBeans = ControllerAdviceBean.findAnnotatedBeans(getApplicationContext());
 		AnnotationAwareOrderComparator.sort(adviceBeans);
 
@@ -587,6 +596,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			if (beanType == null) {
 				throw new IllegalStateException("Unresolvable type for ControllerAdviceBean: " + adviceBean);
 			}
+			/**
+			 * 从给定Class类中找出添加了@RequestMapping和@ModelAttribute注解的方法
+			 */
 			Set<Method> attrMethods = MethodIntrospector.selectMethods(beanType, MODEL_ATTRIBUTE_METHODS);
 			if (!attrMethods.isEmpty()) {
 				this.modelAttributeAdviceCache.put(adviceBean, attrMethods);
@@ -601,12 +613,18 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 					logger.info("Detected @InitBinder methods in " + adviceBean);
 				}
 			}
+			/**
+			 * 如果当前正在遍历的bean实现了RequestBodyAdvice接口，存储起来，后续处理
+			 */
 			if (RequestBodyAdvice.class.isAssignableFrom(beanType)) {
 				requestResponseBodyAdviceBeans.add(adviceBean);
 				if (logger.isInfoEnabled()) {
 					logger.info("Detected RequestBodyAdvice bean in " + adviceBean);
 				}
 			}
+			/**
+			 * 如果当前正在遍历的bean实现了ResponseBodyAdvice接口，存储起来，后续处理
+			 */
 			if (ResponseBodyAdvice.class.isAssignableFrom(beanType)) {
 				requestResponseBodyAdviceBeans.add(adviceBean);
 				if (logger.isInfoEnabled()) {
@@ -1017,6 +1035,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			AnnotationUtils.findAnnotation(method, InitBinder.class) != null;
 
 	/**
+	 * 查找
 	 * MethodFilter that matches {@link ModelAttribute @ModelAttribute} methods.
 	 */
 	public static final MethodFilter MODEL_ATTRIBUTE_METHODS = method ->

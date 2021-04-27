@@ -38,9 +38,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**
+ * 封装有关{@linkplain ControllerAdvice @ControllerAdvice}Spring托管bean的信息，而无需实例化它。
  * Encapsulates information about an {@linkplain ControllerAdvice @ControllerAdvice}
  * Spring-managed bean without necessarily requiring it to be instantiated.
  *
+ * {@link #findAnnotatedBeans（ApplicationContext）}方法可用于发现此类bean。
+ * 但是，可以从任何对象创建{@code @ControllerAdvice}，包括没有{@code @ControllerAdvice}的对象。
  * <p>The {@link #findAnnotatedBeans(ApplicationContext)} method can be used to
  * discover such beans. However, a {@code ControllerAdviceBean} may be created
  * from any object, including ones without an {@code @ControllerAdvice}.
