@@ -68,6 +68,7 @@ public class HandlerMethodReturnValueHandlerComposite implements HandlerMethodRe
 	}
 
 	/**
+	 * 在注册的{@link HandlerMethodReturnValueHandler}上迭代并调用支持传进来的调用响应结果的。
 	 * Iterate over registered {@link HandlerMethodReturnValueHandler}s and invoke the one that supports it.
 	 * @throws IllegalStateException if no suitable {@link HandlerMethodReturnValueHandler} is found.
 	 */
@@ -75,6 +76,9 @@ public class HandlerMethodReturnValueHandlerComposite implements HandlerMethodRe
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
 
+		/**
+		 * 根据响应结果和响应类型选择一个响应结果处理器
+		 */
 		HandlerMethodReturnValueHandler handler = selectHandler(returnValue, returnType);
 		if (handler == null) {
 			throw new IllegalArgumentException("Unknown return value type: " + returnType.getParameterType().getName());
@@ -85,6 +89,9 @@ public class HandlerMethodReturnValueHandlerComposite implements HandlerMethodRe
 	@Nullable
 	private HandlerMethodReturnValueHandler selectHandler(@Nullable Object value, MethodParameter returnType) {
 		boolean isAsyncValue = isAsyncReturnValue(value, returnType);
+		/**
+		 * 迭代内置的HandlerMethodReturnValueHandler对象，从中选择出一个可以处理给定响应结果（类型）的处理器
+		 */
 		for (HandlerMethodReturnValueHandler handler : this.returnValueHandlers) {
 			if (isAsyncValue && !(handler instanceof AsyncHandlerMethodReturnValueHandler)) {
 				continue;

@@ -102,14 +102,26 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 		 * 调用最终要处理这个请求的被@RequestMapping注解标注的方法
 		 */
 		Object returnValue = invokeForRequest(webRequest, mavContainer, providedArgs);
+		/**
+		 * 设置响应状态码
+		 */
 		setResponseStatus(webRequest);
 
+		/**
+		 * 如果返回值不为空
+		 */
 		if (returnValue == null) {
+			/**
+			 * 如果请求未被修改或响应状态码不为空或请求已被处理，说明已经处理完成，不需要再渲染视图，直接返回
+			 */
 			if (isRequestNotModified(webRequest) || getResponseStatus() != null || mavContainer.isRequestHandled()) {
 				mavContainer.setRequestHandled(true);
 				return;
 			}
 		}
+		/**
+		 * 如果返回值不为空，且已经设置了响应异常信息，也不再继续处理，直接返回
+		 */
 		else if (StringUtils.hasText(getResponseStatusReason())) {
 			mavContainer.setRequestHandled(true);
 			return;
@@ -118,6 +130,9 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 		mavContainer.setRequestHandled(false);
 		Assert.state(this.returnValueHandlers != null, "No return value handlers");
 		try {
+			/**
+			 * 进行视图的渲染跳转
+			 */
 			this.returnValueHandlers.handleReturnValue(
 					returnValue, getReturnValueType(returnValue), mavContainer, webRequest);
 		}
@@ -130,6 +145,7 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 	}
 
 	/**
+	 * 根据{@link ResponseStatus}注释设置响应状态码。
 	 * Set the response status according to the {@link ResponseStatus} annotation.
 	 */
 	private void setResponseStatus(ServletWebRequest webRequest) throws IOException {
@@ -154,6 +170,7 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 	}
 
 	/**
+	 * 判断给定的请求是否未修改
 	 * Does the given request qualify as "not modified"?
 	 * @see ServletWebRequest#checkNotModified(long)
 	 * @see ServletWebRequest#checkNotModified(String)

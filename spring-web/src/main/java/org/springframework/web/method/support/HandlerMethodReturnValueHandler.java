@@ -21,6 +21,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
+ * 用于处理从处理程序方法调用返回的值的策略接口。
  * Strategy interface to handle the value returned from the invocation of a
  * handler method .
  *
@@ -31,6 +32,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 public interface HandlerMethodReturnValueHandler {
 
 	/**
+	 * 此处理程序是否支持给定的{@linkplain MethodParameter method return type}。
 	 * Whether the given {@linkplain MethodParameter method return type} is
 	 * supported by this handler.
 	 * @param returnType the method return type to check
@@ -40,6 +42,8 @@ public interface HandlerMethodReturnValueHandler {
 	boolean supportsReturnType(MethodParameter returnType);
 
 	/**
+	 * 通过向模型添加属性并设置视图或将{@link ModelAndViewContainer#setRequestHandled}标志设置为{@code true}来处理给定的返回值，
+	 * 以指示已直接处理响应。
 	 * Handle the given return value by adding attributes to the model and
 	 * setting a view or setting the
 	 * {@link ModelAndViewContainer#setRequestHandled} flag to {@code true}
