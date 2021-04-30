@@ -162,6 +162,7 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 	}
 
 	/**
+	 * 将给定的返回类型写入给定的输出消息。
 	 * Writes the given return type to the given output message.
 	 * @param value the value to write to the output message
 	 * @param returnType the type of the value
@@ -180,6 +181,9 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 		Class<?> valueType;
 		Type declaredType;
 
+		/**
+		 * 判断返回值是否是字符串类型的
+		 */
 		if (value instanceof CharSequence) {
 			outputValue = value.toString();
 			valueType = String.class;
@@ -254,8 +258,14 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 			}
 		}
 
+		/**
+		 * 判断给定的媒体类型（HTTP规范中的）
+		 */
 		if (selectedMediaType != null) {
 			selectedMediaType = selectedMediaType.removeQualityValue();
+			/**
+			 * 遍历查找可以使用的HTTP消息转换器，可以用来个性化配置（比如配置FastJson提供的转换器用来指定自定义输出类型）
+			 */
 			for (HttpMessageConverter<?> converter : this.messageConverters) {
 				GenericHttpMessageConverter genericConverter =
 						(converter instanceof GenericHttpMessageConverter ? (GenericHttpMessageConverter<?>) converter : null);
@@ -267,6 +277,9 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 							inputMessage, outputMessage);
 					if (outputValue != null) {
 						addContentDispositionHeader(inputMessage, outputMessage);
+						/**
+						 * 如果找到的HTTP消息转换器不为空，且存在返回值的话，将返回值通过这个消息转换器写回
+						 */
 						if (genericConverter != null) {
 							genericConverter.write(outputValue, declaredType, selectedMediaType, outputMessage);
 						}

@@ -45,10 +45,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 /**
+ * 解析用{@code@RequestBody}注释的方法参数，
+ * 并通过用{@link HttpMessageConverter}读写请求或响应的主体来处理用{@code @ResponseBody}注释的方法的返回值。
  * Resolves method arguments annotated with {@code @RequestBody} and handles return
  * values from methods annotated with {@code @ResponseBody} by reading and writing
  * to the body of the request or response with an {@link HttpMessageConverter}.
  *
+ * 如果使用{@code@javax.validation.Valid}对{@code@RequestBody}方法参数进行了注释，
+ * 则也会对其进行验证。如果验证失败，如果配置了{@link DefaultHandlerExceptionResolver}，
+ * 则引发{@link MethodArgumentNotValidException}，并生成HTTP 400响应状态代码。
  * <p>An {@code @RequestBody} method argument is also validated if it is annotated
  * with {@code @javax.validation.Valid}. In case of validation failure,
  * {@link MethodArgumentNotValidException} is raised and results in an HTTP 400
@@ -110,6 +115,11 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		return parameter.hasParameterAnnotation(RequestBody.class);
 	}
 
+	/**
+	 * 判断传入的方法或方法所在的类上有没有加ResponseBody注解
+	 * @param returnType the method return type to check
+	 * @return
+	 */
 	@Override
 	public boolean supportsReturnType(MethodParameter returnType) {
 		return (AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ResponseBody.class) ||
@@ -167,6 +177,18 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		return (requestBody != null && requestBody.required() && !parameter.isOptional());
 	}
 
+	/**
+	 * 处理返回值，向HttpServletResponse中写入返回值
+	 * @param returnValue the value returned from the handler method
+	 * @param returnType the type of the return value. This type must have
+	 * previously been passed to {@link #supportsReturnType} which must
+	 * have returned {@code true}.
+	 * @param mavContainer the ModelAndViewContainer for the current request
+	 * @param webRequest the current request
+	 * @throws IOException
+	 * @throws HttpMediaTypeNotAcceptableException
+	 * @throws HttpMessageNotWritableException
+	 */
 	@Override
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest)

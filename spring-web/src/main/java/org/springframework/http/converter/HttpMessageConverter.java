@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
 
 /**
+ * 策略接口，指定可以在HTTP请求和响应之间进行转换的转换器。
  * Strategy interface that specifies a converter that can convert from and to HTTP requests and responses.
  *
  * @author Arjen Poutsma

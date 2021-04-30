@@ -76,12 +76,16 @@ public abstract class AbstractGenericHttpMessageConverter<T> extends AbstractHtt
 	}
 
 	/**
+	 * 这个实现通过调用{@link #addDefaultHeaders}来设置默认的头，然后调用{@link #writeInternal}实现将值写出到输出流中。
 	 * This implementation sets the default headers by calling {@link #addDefaultHeaders},
 	 * and then calls {@link #writeInternal}.
 	 */
 	public final void write(final T t, @Nullable final Type type, @Nullable MediaType contentType,
 			HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 
+		/**
+		 * 添加默认的Headers请求
+		 */
 		final HttpHeaders headers = outputMessage.getHeaders();
 		addDefaultHeaders(headers, t, contentType);
 
@@ -112,6 +116,7 @@ public abstract class AbstractGenericHttpMessageConverter<T> extends AbstractHtt
 	}
 
 	/**
+	 * 写回实际返回值的抽象模板方法。从{@link #write}调用。
 	 * Abstract template method that writes the actual body. Invoked from {@link #write}.
 	 * @param t the object to write to the output message
 	 * @param type the type of object to write (may be {@code null})

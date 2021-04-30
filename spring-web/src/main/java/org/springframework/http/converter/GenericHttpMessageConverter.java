@@ -25,6 +25,8 @@ import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
 
 /**
+ * {@link HttpMessageConverter}的子接口，
+ * 可以将HTTP请求转换为指定泛型类型的目标对象，将指定泛型类型的源对象转换为HTTP响应。
  * A specialization of {@link HttpMessageConverter} that can convert an HTTP request
  * into a target object of a specified generic type and a source object of a specified
  * generic type into an HTTP response.
@@ -38,6 +40,9 @@ import org.springframework.lang.Nullable;
 public interface GenericHttpMessageConverter<T> extends HttpMessageConverter<T> {
 
 	/**
+	 * 指示此转换器是否可以读取给定类型。
+	 * 此方法应执行与{@link HttpMessageConverter#canRead（Class，MediaType）}相同的检查，
+	 * 并执行与泛型类型相关的其他检查。
 	 * Indicates whether the given type can be read by this converter.
 	 * This method should perform the same checks than
 	 * {@link HttpMessageConverter#canRead(Class, MediaType)} with additional ones
@@ -52,6 +57,9 @@ public interface GenericHttpMessageConverter<T> extends HttpMessageConverter<T> 
 	boolean canRead(Type type, @Nullable Class<?> contextClass, @Nullable MediaType mediaType);
 
 	/**
+	 * 从给定的输入消息中读取给定类型的对象，并返回它。 要返回的对象的（可能是泛型）类型。
+	 * 此类型以前必须传递给此接口的{@link#canRead canRead}方法，该方法必须返回{@code true}。
+	 *
 	 * Read an object of the given type form the given input message, and returns it.
 	 * @param type the (potentially generic) type of object to return. This type must have
 	 * previously been passed to the {@link #canRead canRead} method of this interface,
@@ -67,6 +75,9 @@ public interface GenericHttpMessageConverter<T> extends HttpMessageConverter<T> 
 			throws IOException, HttpMessageNotReadableException;
 
 	/**
+	 * 指示给定的类是否可以由此转换器写入。
+	 * 此方法应执行与{@link HttpMessageConverter#canWrite（Class，MediaType）}相同的检查，
+	 * 以及与泛型类型相关的其他检查。
 	 * Indicates whether the given class can be written by this converter.
 	 * <p>This method should perform the same checks than
 	 * {@link HttpMessageConverter#canWrite(Class, MediaType)} with additional ones
@@ -82,6 +93,7 @@ public interface GenericHttpMessageConverter<T> extends HttpMessageConverter<T> 
 	boolean canWrite(@Nullable Type type, Class<?> clazz, @Nullable MediaType mediaType);
 
 	/**
+	 * 将给定对象写入给定的输出消息。
 	 * Write an given object to the given output message.
 	 * @param t the object to write to the output message. The type of this object must
 	 * have previously been passed to the {@link #canWrite canWrite} method of this
