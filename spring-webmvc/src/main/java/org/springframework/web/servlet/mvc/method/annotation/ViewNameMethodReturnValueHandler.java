@@ -100,6 +100,9 @@ public class ViewNameMethodReturnValueHandler implements HandlerMethodReturnValu
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
 
+		/**
+		 * 如果响应结果是字符串类型，直接使用该结果作为页面的名字写入视图容器中
+		 */
 		if (returnValue instanceof CharSequence) {
 			String viewName = returnValue.toString();
 			mavContainer.setViewName(viewName);
@@ -115,6 +118,9 @@ public class ViewNameMethodReturnValueHandler implements HandlerMethodReturnValu
 	}
 
 	/**
+	 * 判断给定的视图名称是否为重定向视图引用。默认实现检查配置的重定向模式，
+	 * 以及视图名称是否以“redirect:”前缀开头
+	 *
 	 * Whether the given view name is a redirect view reference.
 	 * The default implementation checks the configured redirect patterns and
 	 * also if the view name starts with the "redirect:" prefix.
