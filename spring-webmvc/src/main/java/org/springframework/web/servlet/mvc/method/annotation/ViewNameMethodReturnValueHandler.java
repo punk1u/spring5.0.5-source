@@ -25,14 +25,21 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.RequestToViewNameTranslator;
 
 /**
+ * 处理{@code void}和{@code String}类型的返回值，将它们解释为视图名称引用。从4.2开始，
+ * 它还处理一般的{@code CharSequence}类型，例如{@code StringBuilder}或Groovy的{@code GString}，
+ * 同样作为视图名使用。
  * Handles return values of types {@code void} and {@code String} interpreting them
  * as view name reference. As of 4.2, it also handles general {@code CharSequence}
  * types, e.g. {@code StringBuilder} or Groovy's {@code GString}, as view names.
  *
+ * 返回值为{@code null}，可能是由于{@code void}返回类型造成的，
+ * 也可能是由于实际返回值保留为允许配置的{@link RequestToViewNameTranslator}按约定选择视图名称。
  * <p>A {@code null} return value, either due to a {@code void} return type or
  * as the actual return value is left as-is allowing the configured
  * {@link RequestToViewNameTranslator} to select a view name by convention.
  *
+ * 根据{@code @ModelAttribute}或{@code @ResponseBody}等注解的存在，可以用多种方式解释字符串类型的处理结果返回值。
+ * 因此，应该在支持这些注解的处理程序之后调用此处理程序。
  * <p>A String return value can be interpreted in more than one ways depending
  * on the presence of annotations like {@code @ModelAttribute} or
  * {@code @ResponseBody}. Therefore this handler should be configured after

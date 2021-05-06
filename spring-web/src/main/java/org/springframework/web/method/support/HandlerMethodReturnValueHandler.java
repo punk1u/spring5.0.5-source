@@ -22,6 +22,11 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 /**
  * 用于处理从处理程序方法调用返回的值的策略接口。
+ *
+ * 不管是处理加了@ResponseBody注解的处理结果写入输出流对象，
+ * 还是处理响应结果字符串表示的页面跳转都是通过这个接口的实现类完成的。
+ * RequestResponseBodyMethodProcessor类用于完成对@RequestBody和@ResponseBody的处理
+ * ViewNameMethodReturnValueHandler用于完成跳转到响应结果字符串表示的页面
  * Strategy interface to handle the value returned from the invocation of a
  * handler method .
  *
