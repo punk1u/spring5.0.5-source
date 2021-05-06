@@ -1212,7 +1212,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				/**
-				 * 处理视图名称转换，用于需要添加前缀后缀的情况
+				 * 尝试进行默认视图名称解析
 				 */
 				applyDefaultViewName(processedRequest, mv);
 				/**
@@ -1229,7 +1229,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
 			/**
-			 * 完成将请求的处理结果封装的过程
+			 * 完成将请求的处理结果封装的过程(保护解析视图)
 			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
@@ -1552,6 +1552,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 渲染给定的ModelAndView。这是处理请求的最后一个阶段。它可能涉及按名称解析视图。
 	 * Render the given ModelAndView.
 	 * <p>This is the last stage in handling a request. It may involve resolving the view by name.
 	 * @param mv the ModelAndView to render
@@ -1567,9 +1568,15 @@ public class DispatcherServlet extends FrameworkServlet {
 		response.setLocale(locale);
 
 		View view;
+		/**
+		 * 获取到要渲染的视图名称
+		 */
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
+			/**
+			 * 渲染页面
+			 */
 			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
 			if (view == null) {
 				throw new ServletException("Could not resolve view with name '" + mv.getViewName() +
@@ -1616,6 +1623,8 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 将给定的视图名称解析为视图对象（要渲染）。默认实现要求此调度器的所有ViewResolver。
+	 * 可以为自定义解析策略重写，可能基于特定的模型属性或请求参数。
 	 * Resolve the given view name into a View object (to be rendered).
 	 * <p>The default implementations asks all ViewResolvers of this dispatcher.
 	 * Can be overridden for custom resolution strategies, potentially based on

@@ -189,6 +189,7 @@ public final class ModelFactory {
 	}
 
 	/**
+	 * 将列为{@code @SessionAttributes}的模型属性提升到Session。必要时添加{@link BindingResult}属性。
 	 * Promote model attributes listed as {@code @SessionAttributes} to the session.
 	 * Add {@link BindingResult} attributes where necessary.
 	 * @param request the current request
@@ -196,11 +197,17 @@ public final class ModelFactory {
 	 * @throws Exception if creating BindingResult attributes fails
 	 */
 	public void updateModel(NativeWebRequest request, ModelAndViewContainer container) throws Exception {
+		/**
+		 * 获取当前Session中的模型容器
+		 */
 		ModelMap defaultModel = container.getDefaultModel();
 		if (container.getSessionStatus().isComplete()){
 			this.sessionAttributesHandler.cleanupAttributes(request);
 		}
 		else {
+			/**
+			 * 将模型容器中的属性添加到Request中
+			 */
 			this.sessionAttributesHandler.storeAttributes(request, defaultModel);
 		}
 		if (!container.isRequestHandled() && container.getModel() == defaultModel) {

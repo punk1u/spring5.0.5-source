@@ -907,6 +907,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				return null;
 			}
 
+			/**
+			 * 创建并返回视图对象
+			 */
 			return getModelAndView(mavContainer, modelFactory, webRequest);
 		}
 		finally {
@@ -1007,10 +1010,16 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		return new ServletRequestDataBinderFactory(binderMethods, getWebBindingInitializer());
 	}
 
+	/**
+	 * 创建并返回视图对象
+	 */
 	@Nullable
 	private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 			ModelFactory modelFactory, NativeWebRequest webRequest) throws Exception {
 
+		/**
+		 * 将当前请求Session中的模型属性添加到Request中
+		 */
 		modelFactory.updateModel(webRequest, mavContainer);
 		/**
 		 * 如果之前的处理代码中已经标记请求为已处理完成，则说明不需要再进行视图渲染，直接返回null
@@ -1019,6 +1028,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			return null;
 		}
 		ModelMap model = mavContainer.getModel();
+		/**
+		 * 创建MV对象
+		 */
 		ModelAndView mav = new ModelAndView(mavContainer.getViewName(), model, mavContainer.getStatus());
 		if (!mavContainer.isViewReference()) {
 			mav.setView((View) mavContainer.getView());
