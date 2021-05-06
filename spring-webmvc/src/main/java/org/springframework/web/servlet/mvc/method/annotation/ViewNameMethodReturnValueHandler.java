@@ -79,10 +79,23 @@ public class ViewNameMethodReturnValueHandler implements HandlerMethodReturnValu
 
 	@Override
 	public boolean supportsReturnType(MethodParameter returnType) {
+		/**
+		 * 获取到请求处理完成后的响应结果的类型
+		 */
 		Class<?> paramType = returnType.getParameterType();
 		return (void.class == paramType || CharSequence.class.isAssignableFrom(paramType));
 	}
 
+	/**
+	 * 处理响应结果到具体页面的跳转逻辑
+	 * @param returnValue the value returned from the handler method
+	 * @param returnType the type of the return value. This type must have
+	 * previously been passed to {@link #supportsReturnType} which must
+	 * have returned {@code true}.
+	 * @param mavContainer the ModelAndViewContainer for the current request
+	 * @param webRequest the current request
+	 * @throws Exception
+	 */
 	@Override
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
