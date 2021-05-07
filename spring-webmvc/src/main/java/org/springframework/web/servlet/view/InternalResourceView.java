@@ -130,6 +130,7 @@ public class InternalResourceView extends AbstractUrlBasedView {
 
 
 	/**
+	 * 呈现给定指定模型的内部资源。这包括将模型设置为请求属性。
 	 * Render the internal resource given the specified model.
 	 * This includes setting the model as request attributes.
 	 */
@@ -153,6 +154,9 @@ public class InternalResourceView extends AbstractUrlBasedView {
 					"]: Check that the corresponding file exists within your web application archive!");
 		}
 
+		/**
+		 * 如果已经包含或响应已经提交，请执行include，否则forward。
+		 */
 		// If already included or response already committed, perform include, else forward.
 		if (useInclude(request, response)) {
 			response.setContentType(getContentType());
@@ -167,6 +171,9 @@ public class InternalResourceView extends AbstractUrlBasedView {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Forwarding to resource [" + getUrl() + "] in InternalResourceView '" + getBeanName() + "'");
 			}
+			/**
+			 * 重定向到指定视图
+			 */
 			rd.forward(request, response);
 		}
 	}

@@ -295,6 +295,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 
 
 	/**
+	 * 准备给定指定模型的视图，必要时将其与静态属性和RequestContext属性合并。委托RenderMergeDoutpModel进行实际渲染。
 	 * Prepares the view given the specified model, merging it with static
 	 * attributes and a RequestContext attribute, if necessary.
 	 * Delegates to renderMergedOutputModel for the actual rendering.
@@ -315,6 +316,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	}
 
 	/**
+	 * 创建包含动态值和静态属性的组合输出映射（从不{@code null}）。动态值优先于静态属性。
 	 * Creates a combined output Map (never {@code null}) that includes dynamic values and static attributes.
 	 * Dynamic values take precedence over static attributes.
 	 */
@@ -365,6 +367,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	}
 
 	/**
+	 * 准备要呈现的给定响应。当通过HTTPS发送下载内容时，默认实现为IE错误应用了一个解决方法。
 	 * Prepare the given response for rendering.
 	 * <p>The default implementation applies a workaround for an IE bug
 	 * when sending download content via HTTPS.
@@ -393,6 +396,8 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	}
 
 	/**
+	 * 获取请求句柄以向{@link #renderMergedOutputModel}公开，即向视图公开。
+	 * 默认实现将Spring的bean公开的原始请求包装为请求属性（如果需要）。
 	 * Get the request handle to expose to {@link #renderMergedOutputModel}, i.e. to the view.
 	 * <p>The default implementation wraps the original request for exposure of Spring beans
 	 * as request attributes (if demanded).
@@ -412,6 +417,9 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	}
 
 	/**
+	 * 子类必须实现此方法才能实际呈现视图。
+	 * 第一步是准备请求：在JSP中，这意味着将模型对象设置为请求属性。
+	 * 第二步是视图的实际呈现，例如通过RequestDispatcher包含JSP。
 	 * Subclasses must implement this method to actually render the view.
 	 * <p>The first step will be preparing the request: In the JSP case,
 	 * this would mean setting model objects as request attributes.

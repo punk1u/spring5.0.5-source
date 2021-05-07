@@ -1600,6 +1600,9 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (mv.getStatus() != null) {
 				response.setStatus(mv.getStatus().value());
 			}
+			/**
+			 * 视图渲染跳转
+			 */
 			view.render(mv.getModelInternal(), request, response);
 		}
 		catch (Exception ex) {
@@ -1643,7 +1646,13 @@ public class DispatcherServlet extends FrameworkServlet {
 			Locale locale, HttpServletRequest request) throws Exception {
 
 		if (this.viewResolvers != null) {
+			/**
+			 * 找到可以处理这个视图的视图解析器（一般为用户自定义配置视图前缀路径、后缀格式）
+			 */
 			for (ViewResolver viewResolver : this.viewResolvers) {
+				/**
+				 * 尝试使用正在遍历的视图解析器得到最终的视图对象
+				 */
 				View view = viewResolver.resolveViewName(viewName, locale);
 				if (view != null) {
 					return view;
