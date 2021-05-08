@@ -1108,7 +1108,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	/**
 	 * 将MergedBeanDefinitionPostProcessors应用于指定的bean定义，
-	 * 调用它们的{@code postprocessemergedbeandefinition}方法。
+	 * 调用它们的{@code postProcessMergedBeanDefinition}方法。
 	 * Apply MergedBeanDefinitionPostProcessors to the specified bean definition,
 	 * invoking their {@code postProcessMergedBeanDefinition} methods.
 	 * @param mbd the merged bean definition for the bean

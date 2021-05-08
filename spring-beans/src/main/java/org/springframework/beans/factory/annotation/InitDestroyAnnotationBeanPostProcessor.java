@@ -45,21 +45,31 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * 一个{@link org.springframework.beans.factory.config.BeanPostProcessor}调用带注解的init和destroy方法的实现类。
+ * 允许Spring的{@link org.springframework.beans.factory.InitializingBean}和{@link org.springframework.beans.factory.DisposableBean}回调接口的替代注释。
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that invokes annotated init and destroy methods. Allows for an annotation
  * alternative to Spring's {@link org.springframework.beans.factory.InitializingBean}
  * and {@link org.springframework.beans.factory.DisposableBean} callback interfaces.
  *
+ * 此后处理器检查的实际注解类型可以通过{@link #setInitAnnotationType “initAnnotationType”}和{@link #setDestroyAnnotationType “destroyAnnotationType”}属性进行配置。
+ * 可以使用任何自定义注解，因为没有必需的注解属性。
  * <p>The actual annotation types that this post-processor checks for can be
  * configured through the {@link #setInitAnnotationType "initAnnotationType"}
  * and {@link #setDestroyAnnotationType "destroyAnnotationType"} properties.
  * Any custom annotation can be used, since there are no required annotation
  * attributes.
  *
+ * Init和destroy注解可以应用于任何可见性的方法：public、package protected、protected或private。
+ * 可以对多个这样的方法进行注解，但建议仅分别对单个init方法和destroy方法进行注解。
  * <p>Init and destroy annotations may be applied to methods of any visibility:
  * public, package-protected, protected, or private. Multiple such methods
  * may be annotated, but it is recommended to only annotate one single
  * init method and destroy method, respectively.
+ *
+ * Spring的{@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor}支持JSR-250{@link javax.annotation.PostConstruct}
+ * 和{@link javax.annotation.PreDestroy}注解，分别作为init注解和destroy注解。
+ * 此外，它还支持{@linkjavax.annotation.Resource}注解，用于注解驱动的命名bean注入。
  *
  * <p>Spring's {@link org.springframework.context.annotation.CommonAnnotationBeanPostProcessor}
  * supports the JSR-250 {@link javax.annotation.PostConstruct} and {@link javax.annotation.PreDestroy}

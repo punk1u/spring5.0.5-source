@@ -73,17 +73,26 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 /**
- * 处理一些通用的注解(例如@Resource)的BeanPostProcessor后置处理器类
+ * 处理一些通用的注解(例如@Resource)的BeanPostProcessor后置处理器类。
+ * 许多JavaEE5技术（例如JSF1.2）以及Java6的JAX-WS都支持这些常见的Java注解。
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that supports common Java annotations out of the box, in particular the JSR-250
  * annotations in the {@code javax.annotation} package. These common Java
  * annotations are supported in many Java EE 5 technologies (e.g. JSF 1.2),
  * as well as in Java 6's JAX-WS.
  *
+ * 此后处理器包括对{@link javax.annotation.PostConstruct}和{@link javax.annotation.PreDestroy}注解的支持，
+ * 分别作为init注解和destroy注解，通过使用预先配置的注解类型从{@link InitDestroyAnnotationBeanPostProcessor}继承
+ *
  * <p>This post-processor includes support for the {@link javax.annotation.PostConstruct}
  * and {@link javax.annotation.PreDestroy} annotations - as init annotation
  * and destroy annotation, respectively - through inheriting from
  * {@link InitDestroyAnnotationBeanPostProcessor} with pre-configured annotation types.
+ *
+ * 中心元素是{@link javax.annotation.Resource}注解，用于注解驱动的命名bean注入的注解，
+ * 默认情况下来自包含SpringBeanFactory，JNDI中只解析了{@code mappedName}引用。
+ * {@link #setAlwaysUseJndiLookup “alwaysUseJndiLookup”标志}对{@code name}引用和默认名称强制执行相当于标准JavaEE5资源注入的JNDI查找。
+ * 目标bean可以是简单的pojo，除了必须匹配的类型之外，没有其他特殊要求。
  *
  * <p>The central element is the {@link javax.annotation.Resource} annotation
  * for annotation-driven injection of named beans, by default from the containing
@@ -92,6 +101,11 @@ import org.springframework.util.StringValueResolver;
  * equivalent to standard Java EE 5 resource injection for {@code name} references
  * and default names as well. The target beans can be simple POJOs, with no special
  * requirements other than the type having to match.
+ *
+ * JAX-WS{@link javax.xml.ws.WebServiceRef}注解也受支持，类似于{@link javax.annotation.Resource}，
+ * 但具有创建特定JAX-WS服务端点的能力。这可以通过名称指向显式定义的资源，也可以对本地指定的JAX-WS服务类进行操作。
+ * 最后，这个后处理器还支持ejb3{@link javax.ejb.EJB}注释，类似于{@link javax.annotation.Resource}，
+ * 具有为回退检索指定本地bean名称和全局JNDI名称的功能。在本例中，目标bean可以是普通pojo，也可以是ejb3会话bean。
  *
  * <p>The JAX-WS {@link javax.xml.ws.WebServiceRef} annotation is supported too,
  * analogous to {@link javax.annotation.Resource} but with the capability of creating
@@ -102,6 +116,7 @@ import org.springframework.util.StringValueResolver;
  * specify both a local bean name and a global JNDI name for fallback retrieval.
  * The target beans can be plain POJOs as well as EJB 3 Session Beans in this case.
  *
+ * 这个后处理器支持的公共注释在java6（jdk1.6）和javaee5/6中都可用（javaee5/6也为其公共注释提供了一个独立的jar，允许在任何基于java5的应用程序中使用）。
  * <p>The common annotations supported by this post-processor are available in
  * Java 6 (JDK 1.6) as well as in Java EE 5/6 (which provides a standalone jar for
  * its common annotations as well, allowing for use in any Java 5 based application).
@@ -296,6 +311,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+		/**
+		 * 找出这个bean中需要注入的元素的元信息
+		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -345,8 +363,16 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		return metadata;
 	}
 
+	/**
+	 * 根据传入的bean的Class信息构建出其中包含的需要注入的元素信息的元信息对象
+	 * @param clazz
+	 * @return
+	 */
 	private InjectionMetadata buildResourceMetadata(final Class<?> clazz) {
 		LinkedList<InjectionMetadata.InjectedElement> elements = new LinkedList<>();
+		/**
+		 * bean的Class类型
+		 */
 		Class<?> targetClass = clazz;
 
 		do {
