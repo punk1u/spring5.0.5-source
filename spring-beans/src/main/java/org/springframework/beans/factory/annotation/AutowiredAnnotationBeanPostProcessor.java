@@ -530,6 +530,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+					/**
+					 * 构造需要自动注入的字段或方法的元数据信息
+					 */
 					metadata = buildAutowiringMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
@@ -546,6 +549,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			final LinkedList<InjectionMetadata.InjectedElement> currElements = new LinkedList<>();
 
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
+				/**
+				 * 判断传入的Class类中包含的字段上是否有@Auwowired注解或@Value注解（以及可能出现的@Inject注解）
+				 */
 				AnnotationAttributes ann = findAutowiredAnnotation(field);
 				if (ann != null) {
 					if (Modifier.isStatic(field.getModifiers())) {
@@ -554,16 +560,25 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 						return;
 					}
+					/**
+					 * 推断字段上的@Autowired注解的required属性
+					 */
 					boolean required = determineRequiredStatus(ann);
 					currElements.add(new AutowiredFieldElement(field, required));
 				}
 			});
 
+			/**
+			 * 判断传入的Class类中包含的方法上是否有@Auwowired注解或@Value注解（以及可能出现的@Inject注解）
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
 					return;
 				}
+				/**
+				 * 判断传入的Class类中包含的字段上是否有@Auwowired注解或@Value注解（以及可能出现的@Inject注解）
+				 */
 				AnnotationAttributes ann = findAutowiredAnnotation(bridgedMethod);
 				if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
 					if (Modifier.isStatic(method.getModifiers())) {
@@ -578,6 +593,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 									method);
 						}
 					}
+					/**
+					 * 推断方法上的@Autowired注解的required属性
+					 */
 					boolean required = determineRequiredStatus(ann);
 					PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
 					currElements.add(new AutowiredMethodElement(method, required, pd));
@@ -592,6 +610,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		return new InjectionMetadata(clazz, elements);
 	}
 
+	/**
+	 * 判断传入的字段或方法上是否有@Auwowired注解或@Value注解（以及可能出现的@Inject注解）,
+	 * 如果有的话，将对应的注解属性返回，否则返回null
+	 * @param ao
+	 * @return
+	 */
 	@Nullable
 	private AnnotationAttributes findAutowiredAnnotation(AccessibleObject ao) {
 		if (ao.getAnnotations().length > 0) {

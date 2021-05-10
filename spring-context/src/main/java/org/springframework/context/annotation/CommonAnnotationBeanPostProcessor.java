@@ -312,7 +312,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
 		/**
-		 * 找出这个bean中需要注入的元素的元信息
+		 * 找出这个bean中被@Resource注解标注的需要注入的元素或方法的元信息
 		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
@@ -355,6 +355,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+					/**
+					 * 根据传入的Clsss对象找出其中被@Resource注解标注的字段或方法的元信息
+					 */
 					metadata = buildResourceMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
@@ -379,6 +382,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			final LinkedList<InjectionMetadata.InjectedElement> currElements =
 					new LinkedList<>();
 
+			/**
+			 * 找出该Class类中被@Resource注解标注的字段的元信息
+			 */
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				if (webServiceRefClass != null && field.isAnnotationPresent(webServiceRefClass)) {
 					if (Modifier.isStatic(field.getModifiers())) {
@@ -402,6 +408,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 				}
 			});
 
+			/**
+			 * 找出该Class类中被@Autowired注解标注的方法的元信息
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {

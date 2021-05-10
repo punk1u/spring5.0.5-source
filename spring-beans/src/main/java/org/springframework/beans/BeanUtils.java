@@ -448,6 +448,7 @@ public abstract class BeanUtils {
 	}
 
 	/**
+	 * 找到给定方法的JavaBeans{@code PropertyDescriptor}，该方法可以是该bean属性的read方法，也可以是write方法。
 	 * Find a JavaBeans {@code PropertyDescriptor} for the given method,
 	 * with the method either being the read method or the write method for
 	 * that bean property.

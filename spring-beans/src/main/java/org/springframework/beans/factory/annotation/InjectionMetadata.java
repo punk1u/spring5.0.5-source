@@ -121,6 +121,9 @@ public class InjectionMetadata {
 
 	public abstract static class InjectedElement {
 
+		/**
+		 * 表示需要注入的元素的类型（字段、方法等）
+		 */
 		protected final Member member;
 
 		protected final boolean isField;
