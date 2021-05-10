@@ -88,9 +88,15 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	protected transient Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 表示标注初始化Bean之后要调用的方法的注解的类型（Spring默认设置的值为@PostConstruct）
+	 */
 	@Nullable
 	private Class<? extends Annotation> initAnnotationType;
 
+	/**
+	 * 表示标注销毁Bean之前要调用的方法的注解的类型（Spring默认设置的值为@PreDestroy）
+	 */
 	@Nullable
 	private Class<? extends Annotation> destroyAnnotationType;
 
@@ -134,6 +140,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 查找bean生命周期有关的注解(@PostConstruct、@PreDestroy)标注的方法的元信息
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(beanType);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -184,6 +193,11 @@ public class InitDestroyAnnotationBeanPostProcessor
 	}
 
 
+	/**
+	 * 查找bean生命周期有关的注解(@PostConstruct、@PreDestroy)标注的方法的元信息
+	 * @param clazz
+	 * @return
+	 */
 	private LifecycleMetadata findLifecycleMetadata(Class<?> clazz) {
 		if (this.lifecycleMetadataCache == null) {
 			// Happens after deserialization, during destruction...
@@ -204,6 +218,11 @@ public class InitDestroyAnnotationBeanPostProcessor
 		return metadata;
 	}
 
+	/**
+	 * 构造bean生命周期有关的注解(@PostConstruct、@PreDestroy)标注的方法的元信息
+	 * @param clazz
+	 * @return
+	 */
 	private LifecycleMetadata buildLifecycleMetadata(final Class<?> clazz) {
 		final boolean debug = logger.isDebugEnabled();
 		LinkedList<LifecycleElement> initMethods = new LinkedList<>();
@@ -215,6 +234,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 			final LinkedList<LifecycleElement> currDestroyMethods = new LinkedList<>();
 
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
+				/**
+				 * 判断这个方法是否被会在bean初始化之后调用的@PostConstruct注解标注
+				 */
 				if (initAnnotationType != null && method.isAnnotationPresent(initAnnotationType)) {
 					LifecycleElement element = new LifecycleElement(method);
 					currInitMethods.add(element);
@@ -222,6 +244,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 						logger.debug("Found init method on class [" + clazz.getName() + "]: " + method);
 					}
 				}
+				/**
+				 * 判断这个方法是否被会在bean初始化之后调用的@PreDestroy注解标注
+				 */
 				if (destroyAnnotationType != null && method.isAnnotationPresent(destroyAnnotationType)) {
 					currDestroyMethods.add(new LifecycleElement(method));
 					if (debug) {

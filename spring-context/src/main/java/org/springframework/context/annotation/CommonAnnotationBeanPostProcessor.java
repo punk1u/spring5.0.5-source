@@ -208,6 +208,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 
 	/**
+	 * 创建一个新的CommonAnnotationBeanPostProcessor，
+	 * 将init和destroy注解类型分别设置为{@link javax.annotation.PostConstruct}
+	 * 和{@link javax.annotation.PreDestroy}。
 	 * Create a new CommonAnnotationBeanPostProcessor,
 	 * with the init and destroy annotation types set to
 	 * {@link javax.annotation.PostConstruct} and {@link javax.annotation.PreDestroy},
@@ -310,6 +313,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 调用父类InitDestroyAnnotationBeanPostProcessor处理bean生命周期有关的注解(PostConstruct、PreDestroy)
+		 */
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
 		/**
 		 * 找出这个bean中被@Resource注解标注的需要注入的元素或方法的元信息

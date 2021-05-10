@@ -1122,6 +1122,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 */
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
+				/**
+				 * 这里满足条件的, 有三个后置处理器, 按照调用先后顺序为:
+				 * 1.CommonAnnotationBeanPostProcessor
+				 * 2.AutowiredAnnotationBeanPostProcessor
+				 * 3.ApplicationListenerDetector
+				 */
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
