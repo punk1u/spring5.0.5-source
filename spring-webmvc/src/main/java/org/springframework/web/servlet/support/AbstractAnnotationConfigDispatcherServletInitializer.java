@@ -46,6 +46,9 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 
 	/**
 	 * {@inheritDoc}
+	 * 此实现创建一个{@link AnnotationConfigWebApplicationContext}，
+	 * 为它提供{@link #getRootConfigClasses()}返回的带注解的类。
+	 * 如果{@link #getRootConfigClasses()}返回{@code null}，则返回{@code null}。
 	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
 	 * providing it the annotated classes returned by {@link #getRootConfigClasses()}.
 	 * Returns {@code null} if {@link #getRootConfigClasses()} returns {@code null}.

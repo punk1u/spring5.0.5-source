@@ -27,9 +27,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.WebApplicationInitializer;
 
 /**
+ * 方便的基类，用于在servlet上下文中注册{@link ContextLoaderListener}的{@link WebApplicationInitializer}实现。
  * Convenient base class for {@link WebApplicationInitializer} implementations
  * that register a {@link ContextLoaderListener} in the servlet context.
  *
+ * 子类唯一需要实现的方法是{@link #createRootApplicationContext()}，它从{@link #registerContextLoaderListener(ServletContext)}调用。
  * <p>The only method required to be implemented by subclasses is
  * {@link #createRootApplicationContext()}, which gets invoked from
  * {@link #registerContextLoaderListener(ServletContext)}.
@@ -51,6 +53,8 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	}
 
 	/**
+	 * 针对给定的servlet上下文注册一个{@link ContextLoaderListener}。
+	 * {@code ContextLoaderListener}使用{@link #createRootApplicationContext()}模板方法返回的应用程序上下文进行初始化。
 	 * Register a {@link ContextLoaderListener} against the given servlet context. The
 	 * {@code ContextLoaderListener} is initialized with the application context returned
 	 * from the {@link #createRootApplicationContext()} template method.
