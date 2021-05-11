@@ -1542,7 +1542,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		/**
 		 * 获取这个bean中的属性信息，便于后续完成对这些属性的依赖注入
-		 * 只有在通过xml形式声明bean并在bean标签下通过property手动指定要注入的属性时才会有值
+		 * 只有在通过xml形式声明bean并在bean标签下通过property手动指定要注入的属性时或者通过自定义的
+		 * BeanFactoryPostProcessor中向指定的bean的BeanDefinition对象中添加后才会有值
 		 */
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
@@ -1803,6 +1804,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 应用给定的属性值，解析对该bean工厂中其他bean的任何运行时引用。必须使用深度复制，因此我们不会永久修改此属性。
 	 * Apply the given property values, resolving any runtime references
 	 * to other beans in this bean factory. Must use deep copy, so we
 	 * don't permanently modify this property.
