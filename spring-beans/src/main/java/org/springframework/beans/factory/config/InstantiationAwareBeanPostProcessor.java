@@ -92,6 +92,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	}
 
 	/**
+	 * 在工厂将给定的属性值应用于给定的bean之前，对其进行后处理。允许检查是否满足了所有依赖项，
+	 * 例如基于bean属性设置器上的“Required”注解。还允许替换要应用的属性值，
+	 * 通常是通过基于原始属性值创建新的MutablePropertyValues实例，添加或删除特定值。默认实现按原样返回给定的{@codepvs}。
 	 * Post-process the given property values before the factory applies them
 	 * to the given bean. Allows for checking whether all dependencies have been
 	 * satisfied, for example based on a "Required" annotation on bean property setters.
