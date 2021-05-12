@@ -182,6 +182,10 @@ public abstract class BeanFactoryUtils {
 	}
 
 	/**
+	 * 获取给定类型的所有bean名称，包括在祖先工厂中定义的bean名称。在重写bean定义的情况下，将返回唯一的名称。
+	 * 如果设置了“allowEagerInit”标志，则考虑由FactoryBeans创建的对象，这意味着FactoryBeans将被初始化。
+	 * 如果由FactoryBean创建的对象不匹配，则原始FactoryBean本身将与类型匹配。
+	 * 如果未设置“allowEagerInit”，则只检查原始FactoryBean（这不需要初始化每个FactoryBean）。
 	 * Get all bean names for the given type, including those defined in ancestor
 	 * factories. Will return unique names in case of overridden bean definitions.
 	 * <p>Does consider objects created by FactoryBeans if the "allowEagerInit"
