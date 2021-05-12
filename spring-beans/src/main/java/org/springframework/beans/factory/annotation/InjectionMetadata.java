@@ -92,7 +92,7 @@ public class InjectionMetadata {
 					logger.debug("Processing injected element of bean '" + beanName + "': " + element);
 				}
 				/**
-				 * 注入属性
+				 * 注入属性(可能是字段也可能是方法，分别对应inject方法的两个子类实现)
 				 */
 				element.inject(target, beanName, pvs);
 			}

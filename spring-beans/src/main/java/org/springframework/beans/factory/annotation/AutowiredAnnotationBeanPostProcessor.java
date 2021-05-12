@@ -564,6 +564,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					 * 推断字段上的@Autowired注解的required属性
 					 */
 					boolean required = determineRequiredStatus(ann);
+					/**
+					 * 创建出描述字段自动注入的元素并保存
+					 */
 					currElements.add(new AutowiredFieldElement(field, required));
 				}
 			});
@@ -598,6 +601,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					 */
 					boolean required = determineRequiredStatus(ann);
 					PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+					/**
+					 * 创建出描述方法自动注入的元素并保存
+					 */
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
 			});
@@ -676,6 +682,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 	/**
+	 * 解析指定的缓存方法参数或字段值。
 	 * Resolve the specified cached method argument or field value.
 	 */
 	@Nullable
@@ -692,6 +699,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 
 	/**
+	 * 表示有关带注解字段的注入信息的类。
 	 * Class representing injection information about an annotated field.
 	 */
 	private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
@@ -708,20 +716,39 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			this.required = required;
 		}
 
+		/**
+		 * 注入添加了@Autowired注解的需要注入的字段
+		 * @param bean
+		 * @param beanName
+		 * @param pvs
+		 * @throws Throwable
+		 */
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;
 			Object value;
+			/**
+			 * 判断是否有缓存
+			 */
 			if (this.cached) {
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			}
 			else {
 				DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
 				desc.setContainingClass(bean.getClass());
+				/**
+				 * 存储需要自动注入的bean的名字
+				 */
 				Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
 				Assert.state(beanFactory != null, "No BeanFactory available");
+				/**
+				 * 获取Bean工厂中的类型转换器(用途：根据表示bean class存放路径的路径字符串获取该bean)
+				 */
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
+					/**
+					 * 从Spring容器中获取需要注入的字段的值
+					 */
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}
 				catch (BeansException ex) {
@@ -730,10 +757,19 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				synchronized (this) {
 					if (!this.cached) {
 						if (value != null || this.required) {
+							/**
+							 * 把当前这个需要注入的bean的字段描述缓存起来
+							 */
 							this.cachedFieldValue = desc;
 							registerDependentBeans(beanName, autowiredBeanNames);
+							/**
+							 * 只有当可被注入的元素个数为1时，才进行注入
+							 */
 							if (autowiredBeanNames.size() == 1) {
 								String autowiredBeanName = autowiredBeanNames.iterator().next();
+								/**
+								 * 判断Spring容器中是否包含这个bean，并且这个bean的类型是否与需要注入的字段的类型相同
+								 */
 								if (beanFactory.containsBean(autowiredBeanName) &&
 										beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
 									this.cachedFieldValue = new ShortcutDependencyDescriptor(
@@ -748,6 +784,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					}
 				}
 			}
+			/**
+			 * 通过反射完成这个字段的依赖注入
+			 */
 			if (value != null) {
 				ReflectionUtils.makeAccessible(field);
 				field.set(bean, value);
@@ -757,6 +796,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 
 	/**
+	 * 表示有关带注解方法的注入信息的类。
 	 * Class representing injection information about an annotated method.
 	 */
 	private class AutowiredMethodElement extends InjectionMetadata.InjectedElement {
@@ -773,6 +813,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			this.required = required;
 		}
 
+		/**
+		 * 注入添加了@Autowired注解的需要注入的方法
+		 * @param bean
+		 * @param beanName
+		 * @param pvs
+		 * @throws Throwable
+		 */
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			if (checkPropertySkipping(pvs)) {
