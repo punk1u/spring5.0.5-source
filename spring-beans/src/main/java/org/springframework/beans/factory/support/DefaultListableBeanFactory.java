@@ -1133,7 +1133,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 
 			/**
-			 * 匹配到的bean
+			 * 根据需要注入的字段的类型匹配到的bean(可能有多个，比如需要注入的是接口的实现类，实现类有多个)
 			 */
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
@@ -1147,6 +1147,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object instanceCandidate;
 
 			if (matchingBeans.size() > 1) {
+				/**
+				 * 如果找到了多个候选bean的话，说明有多个可供注入的，需要再根据加了@Autowired的字段的名称去确定
+				 * 使用哪个候选bean对象(测试类见TestByNameService)
+				 */
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
 					if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
@@ -1159,6 +1163,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						return null;
 					}
 				}
+				/**
+				 * 根据推断出的需要使用的bean的名字从根据类型找出来的Map<beanName,Class>当中获取
+				 */
 				instanceCandidate = matchingBeans.get(autowiredBeanName);
 			}
 			else {
@@ -1392,6 +1399,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
+	 * 确定要选择使用给定bean候选集中的哪个bean作为候选。
+	 * 查找{@code @Primary}和{@code @Priority}（按顺序）。
 	 * Determine the autowire candidate in the given set of beans.
 	 * <p>Looks for {@code @Primary} and {@code @Priority} (in that order).
 	 * @param candidates a Map of candidate names and candidate instances
@@ -1401,6 +1410,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	@Nullable
 	protected String determineAutowireCandidate(Map<String, Object> candidates, DependencyDescriptor descriptor) {
+		/**
+		 * 需要自动注入的bean的Class类型
+		 */
 		Class<?> requiredType = descriptor.getDependencyType();
 		String primaryCandidate = determinePrimaryCandidate(candidates, requiredType);
 		if (primaryCandidate != null) {
@@ -1414,6 +1426,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (Map.Entry<String, Object> entry : candidates.entrySet()) {
 			String candidateName = entry.getKey();
 			Object beanInstance = entry.getValue();
+			/**
+			 * 如果候选bean列表中的某个bean的名称相同的话和需要注入的字段的名称相同的话，
+			 * 选择这个
+			 */
 			if ((beanInstance != null && this.resolvableDependencies.containsValue(beanInstance)) ||
 					matchesBeanName(candidateName, descriptor.getDependencyName())) {
 				return candidateName;
@@ -1423,6 +1439,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
+	 * 确定给定bean集中的主要候选。
 	 * Determine the primary candidate in the given set of beans.
 	 * @param candidates a Map of candidate names and candidate instances
 	 * (or candidate classes if not created yet) that match the required type
