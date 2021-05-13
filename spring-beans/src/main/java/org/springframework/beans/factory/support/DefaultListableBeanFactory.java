@@ -1090,6 +1090,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			return new Jsr330ProviderFactory().createDependencyProvider(descriptor, requestingBeanName);
 		}
 		else {
+			/**
+			 * 判断是否是@Lazy注解标注的需要延迟注入的字段，
+			 * 如果是的话先创建一个该字段表示的对象由CGLIB生成的目标对象的代理对象
+			 */
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {

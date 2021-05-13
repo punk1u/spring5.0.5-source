@@ -71,6 +71,7 @@ public interface AutowireCandidateResolver {
 	}
 
 	/**
+	 * 如果注入点需要，为实际依赖目标的延迟解析构建代理。
 	 * Build a proxy for lazy resolution of the actual dependency target,
 	 * if demanded by the injection point.
 	 * <p>The default implementation simply returns {@code null}.

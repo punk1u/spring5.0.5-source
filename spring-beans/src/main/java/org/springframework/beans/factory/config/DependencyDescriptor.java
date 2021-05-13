@@ -319,6 +319,8 @@ public class DependencyDescriptor extends InjectionPoint implements Serializable
 	}
 
 	/**
+	 * 初始化基础方法参数的参数名称发现（如果有）。这个方法实际上并不试图在此时检索参数名；
+	 * 它只允许在应用程序调用{@link #getDependencyName()}（如果有）时进行发现。
 	 * Initialize parameter name discovery for the underlying method parameter, if any.
 	 * <p>This method does not actually try to retrieve the parameter name at
 	 * this point; it just allows discovery to happen when the application calls
