@@ -434,6 +434,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		/**
+		 * 第八次调用Bean后置处理器
 		 * 执行所有直接实现了BeanPostProcessor的实现类的postProcessAfterInitialization方法
 		 */
 		for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
@@ -1959,6 +1960,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 			/**
+			 * 第七次调用bean后置处理器
 			 * 在bean的初始化之前调用一系列的bean后置处理器，包括：
 			 * 1、
 			 * 调用ApplicationContextAwareProcessor的postProcessBeforeInitialization完成EnvironmentAware、
@@ -1984,6 +1986,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		/**
+		 * 第八次调用bean后置处理器
 		 * 后置处理
 		 * bean的aop代理增强就是在这里完成的
 		 * 调用所有bean对象实现的BeanPostProcessor接口的postProcessAfterInitialization方法

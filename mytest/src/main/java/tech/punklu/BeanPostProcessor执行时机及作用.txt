@@ -1,0 +1,49 @@
+第一次——————判断bean是否需要代理
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation()
+
+InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
+
+第二次——————推断构造方法
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#determineConstructorsFromBeanPostProcessors()
+
+SmartInstantiationAwareBeanPostProcessor#determineCandidateConstructors
+
+第三次——————合并父子bd
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors()
+
+org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition()
+
+第四次——————循环依赖 提前暴露一个工厂
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#getEarlyBeanReference()
+
+org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference()
+
+第五次——————判断属性是否需要注入
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean()
+
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessAfterInstantiation()
+
+第六次——————属性填充
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean()
+
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessPropertyValues()
+
+第七次—————— 调用各种aware————完成生命周期初始化调用
+包括：
+    1、调用ApplicationContextAwareProcessor的postProcessBeforeInitialization完成EnvironmentAware、
+       EmbeddedValueResolverAware、ResourceLoaderAware、ApplicationEventPublisherAware、
+       MessageSourceAware、ApplicationContextAware的Aware注入
+    2、调用ScheduledAnnotationBeanPostProcessor的postProcessBeforeInitialization方法完成定时任务注解的相关bean的后置处理
+    3、调用ServletContextAwareProcessor和SimpleServletPostProcessor的postProcessBeforeInitialization方法完成Spring web的ServletContext的相关处理
+    4、调用InitDestroyAnnotationBeanPostProcessor的postProcessBeforeInitialization方法完成包括@PostConstruct相关bean生命周期的回调处理
+
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization
+
+org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization()
+
+
+第八次—————— 完成代理
+
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization
+
+org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization()
