@@ -593,7 +593,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				onRefresh();
 
 				/**
-				 * 向Spring容器中注册监听器对象
+				 * 向Spring容器中注册监听器对象（这个方法中只负责注册实现了ApplicationListener接口的监听器对象,
+				 * 并不包含对@EventListener注解声明的监听器对象的处理）
 				 */
 				// Check for listener beans and register them.
 				registerListeners();
@@ -602,6 +603,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 实例化之前添加到BeanDefinitionMap中的所有的非延迟加载的单例对象
 				 * validate验证和实例化都包含在内
+				 *
+				 * 注意：对@EventListener注解声明的事件监听器的注册在这里完成
 				 */
 				finishBeanFactoryInitialization(beanFactory);
 
@@ -895,6 +898,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Doesn't affect other listeners, which can be added without being beans.
 	 */
 	protected void registerListeners() {
+		/**
+		 * 先注册静态指定的侦听器
+		 */
 		// Register statically specified listeners first.
 		for (ApplicationListener<?> listener : getApplicationListeners()) {
 			getApplicationEventMulticaster().addApplicationListener(listener);
@@ -902,6 +908,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
+		/**
+		 * 获取Spring容器中已注册的ApplicationListener类型的bean的bean名称，并将这些bean名称添加到事件多路广播器中
+		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
 			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
@@ -911,6 +920,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		Set<ApplicationEvent> earlyEventsToProcess = this.earlyApplicationEvents;
 		this.earlyApplicationEvents = null;
 		if (earlyEventsToProcess != null) {
+			/**
+			 * 向事件多路广播器中注册事件对象
+			 */
 			for (ApplicationEvent earlyEvent : earlyEventsToProcess) {
 				getApplicationEventMulticaster().multicastEvent(earlyEvent);
 			}

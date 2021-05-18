@@ -44,6 +44,14 @@ package org.springframework.beans.factory;
 public interface SmartInitializingSingleton {
 
 	/**
+	 * 在单例预实例化阶段结束时调用，并保证已经创建了所有常规单例bean。
+	 * 此方法中对{@link ListableBeanFactory#getBeansOfType}的调用不会在引导过程中触发意外的副作用。
+	 *
+	 * 注意：对于{@link BeanFactory}引导后按需延迟初始化的单例bean，
+	 * 不会触发此回调，对于任何其他bean范围也不会。小心地将其用于仅具有预期引导语义的bean。
+	 *
+	 * 此接口有多个实现了，其中EventListenerMethodProcessor中的afterSingletonsInstantiated()方法
+	 * 用于完成使用@EventListener注解声明的监听器的注册
 	 * Invoked right at the end of the singleton pre-instantiation phase,
 	 * with a guarantee that all regular singleton beans have been created
 	 * already. {@link ListableBeanFactory#getBeansOfType} calls within

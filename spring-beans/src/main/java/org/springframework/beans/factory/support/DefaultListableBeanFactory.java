@@ -793,6 +793,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		/**
+		 * 触发所有相关bean的初始化后的回调方法
+		 */
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
@@ -800,6 +803,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
 				if (System.getSecurityManager() != null) {
 					AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+						/**
+						 * 调用回调方法，其中会完成对使用@EventListener注解注册的事件监听器的注册
+						 */
 						smartSingleton.afterSingletonsInstantiated();
 						return null;
 					}, getAccessControlContext());

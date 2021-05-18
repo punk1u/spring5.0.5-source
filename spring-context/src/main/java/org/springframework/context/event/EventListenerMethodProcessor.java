@@ -45,6 +45,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * 将{@link EventListener}注解标注的方法注册为单个{@link ApplicationListener}实例。
  * Register {@link EventListener} annotated method as individual {@link ApplicationListener}
  * instances.
  *
@@ -77,10 +78,17 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 	}
 
 
+	/**
+	 * 将{@link EventListener}注解标注的方法注册为单个{@link ApplicationListener}实例。
+	 */
 	@Override
 	public void afterSingletonsInstantiated() {
 		List<EventListenerFactory> factories = getEventListenerFactories();
 		ConfigurableApplicationContext context = getApplicationContext();
+		/**
+		 * 找出Spring中已注册的所有bean对象的bean名称，
+		 * 因为@EventListener可以写在任何一个普通bean里，所以这里需要扫描Object类型的bean对象
+		 */
 		String[] beanNames = context.getBeanNamesForType(Object.class);
 		for (String beanName : beanNames) {
 			if (!ScopedProxyUtils.isScopedTarget(beanName)) {
@@ -111,6 +119,10 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 						}
 					}
 					try {
+						/**
+						 * 处理正在遍历的这个bean对象，判断其中的方法是否标注有@EventListener注解，
+						 * 如果有的话，将这个方法生成为ApplicationListener监听器对象并注册奥Spring容器中
+						 */
 						processBean(factories, beanName, type);
 					}
 					catch (Throwable ex) {
@@ -124,16 +136,30 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 
 
 	/**
+	 * 返回要用于处理的{@link EventListenerFactory}实例
 	 * Return the {@link EventListenerFactory} instances to use to handle
 	 * {@link EventListener} annotated methods.
 	 */
 	protected List<EventListenerFactory> getEventListenerFactories() {
+		/**
+		 * 从Spring容器中获取已注册的用于处理@EventListener注解方法并将之生成为ApplicationListener的EventListenerFactory策略接口Map对象
+		 */
 		Map<String, EventListenerFactory> beans = getApplicationContext().getBeansOfType(EventListenerFactory.class);
 		List<EventListenerFactory> factories = new ArrayList<>(beans.values());
+		/**
+		 * 排序，优先使用优先级高的策略生成对象
+		 */
 		AnnotationAwareOrderComparator.sort(factories);
 		return factories;
 	}
 
+	/**
+	 * 判断这个bean中的方法上是否被@EventListener注解标注，如果有的话，
+	 * 将其转换为ApplicationListener对象并注册到Spring容器中
+	 * @param factories
+	 * @param beanName
+	 * @param targetType
+	 */
 	protected void processBean(
 			final List<EventListenerFactory> factories, final String beanName, final Class<?> targetType) {
 
