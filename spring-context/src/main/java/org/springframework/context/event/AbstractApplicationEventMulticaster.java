@@ -250,7 +250,13 @@ public abstract class AbstractApplicationEventMulticaster
 			listeners = new LinkedHashSet<>(this.defaultRetriever.applicationListeners);
 			listenerBeans = new LinkedHashSet<>(this.defaultRetriever.applicationListenerBeans);
 		}
+		/**
+		 * 遍历Spring在启动的时候已经注册的ApplicationListener事件监听器
+		 */
 		for (ApplicationListener<?> listener : listeners) {
+			/**
+			 * 判断正在遍历的事件监听器是否对给定的事件类型和事件来源感兴趣，如果感兴趣的话说明找到了响应的事件监听器，保存起来
+			 */
 			if (supportsEvent(listener, eventType, sourceType)) {
 				if (retriever != null) {
 					retriever.applicationListeners.add(listener);
@@ -305,6 +311,10 @@ public abstract class AbstractApplicationEventMulticaster
 	}
 
 	/**
+	 * 确定给定的侦听器是否支持给定的事件。默认实现检测{@link SmartApplicationListener}和{@link GenericApplicationListener}接口。
+	 * 在标准{@link ApplicationListener}的情况下，
+	 * {@link GenericApplicationListenerAdapter}将用于内省目标侦听器的一般声明类型。
+	 *
 	 * Determine whether the given listener supports the given event.
 	 * <p>The default implementation detects the {@link SmartApplicationListener}
 	 * and {@link GenericApplicationListener} interfaces. In case of a standard

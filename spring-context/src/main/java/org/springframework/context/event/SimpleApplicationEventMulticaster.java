@@ -137,7 +137,13 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		 * 获取并遍历所有的已注册的且与给定事件类型匹配的事件监听器，并尝试向已注册的事件监听器发布事件
 		 */
 		for (final ApplicationListener<?> listener : getApplicationListeners(event, type)) {
+			/**
+			 * 尝试使用线程池，可以避免因为调用监听器报错而影响主线程执行
+			 */
 			Executor executor = getTaskExecutor();
+			/**
+			 * 用给定的事件调用给定的监听器
+			 */
 			if (executor != null) {
 				executor.execute(() -> invokeListener(listener, event));
 			}
@@ -152,6 +158,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	}
 
 	/**
+	 * 用给定的事件调用给定的侦听器。
 	 * Invoke the given listener with the given event.
 	 * @param listener the ApplicationListener to invoke
 	 * @param event the current event to propagate
