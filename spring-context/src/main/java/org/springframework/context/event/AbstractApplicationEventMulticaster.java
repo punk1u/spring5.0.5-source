@@ -160,6 +160,7 @@ public abstract class AbstractApplicationEventMulticaster
 	}
 
 	/**
+	 * 返回与给定事件类型匹配的ApplicationListener集合。不匹配的侦听器会提前被排除。
 	 * Return a Collection of ApplicationListeners matching the given
 	 * event type. Non-matching listeners get excluded early.
 	 * @param event the event to be propagated. Allows for excluding
@@ -171,10 +172,22 @@ public abstract class AbstractApplicationEventMulticaster
 	protected Collection<ApplicationListener<?>> getApplicationListeners(
 			ApplicationEvent event, ResolvableType eventType) {
 
+		/**
+		 * 获取事件的来源（发起者）
+		 */
 		Object source = event.getSource();
+		/**
+		 * 获取事件来源的对象的Class
+		 */
 		Class<?> sourceType = (source != null ? source.getClass() : null);
+		/**
+		 * 根据事件类型和事件来源对象的类型生成缓存 cache Key
+		 */
 		ListenerCacheKey cacheKey = new ListenerCacheKey(eventType, sourceType);
 
+		/**
+		 * 如果来自该事件来源的该事件之前已经缓存过，直接从缓存中获取对该事件感兴趣的事件监听器
+		 */
 		// Quick check for existing entry on ConcurrentHashMap...
 		ListenerRetriever retriever = this.retrieverCache.get(cacheKey);
 		if (retriever != null) {
@@ -190,9 +203,16 @@ public abstract class AbstractApplicationEventMulticaster
 				if (retriever != null) {
 					return retriever.getApplicationListeners();
 				}
+				/**
+				 * 双重验证后如果确认缓存中还是没有，则开始实际检索并过滤出对该事件感兴趣的事件监听器
+				 * 并缓存所有对该事件和对应事件来源感兴趣的监听器
+				 */
 				retriever = new ListenerRetriever(true);
 				Collection<ApplicationListener<?>> listeners =
 						retrieveApplicationListeners(eventType, sourceType, retriever);
+				/**
+				 * 放入缓存
+				 */
 				this.retrieverCache.put(cacheKey, retriever);
 				return listeners;
 			}
@@ -204,6 +224,7 @@ public abstract class AbstractApplicationEventMulticaster
 	}
 
 	/**
+	 * 实际检索给定事件和源类型的应用程序侦听器
 	 * Actually retrieve the application listeners for the given event and source type.
 	 * @param eventType the event type
 	 * @param sourceType the event source type
@@ -213,8 +234,17 @@ public abstract class AbstractApplicationEventMulticaster
 	private Collection<ApplicationListener<?>> retrieveApplicationListeners(
 			ResolvableType eventType, @Nullable Class<?> sourceType, @Nullable ListenerRetriever retriever) {
 
+		/**
+		 * 对指定的该事件和事件来源感兴趣的事件监听器列表，即最终返回结果
+		 */
 		LinkedList<ApplicationListener<?>> allListeners = new LinkedList<>();
+		/**
+		 * 用于存放应用程序中存在的所有已注册的事件监听器
+		 */
 		Set<ApplicationListener<?>> listeners;
+		/**
+		 * 存在事件监听器的bean的名字集合
+		 */
 		Set<String> listenerBeans;
 		synchronized (this.retrievalMutex) {
 			listeners = new LinkedHashSet<>(this.defaultRetriever.applicationListeners);

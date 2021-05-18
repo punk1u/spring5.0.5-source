@@ -75,6 +75,8 @@ public interface ApplicationEventMulticaster {
 	void multicastEvent(ApplicationEvent event);
 
 	/**
+	 * 将给定的应用程序事件多播到适当的侦听器。
+	 * 如果{@code eventType}是{@code null}，则基于{@code event}实例生成默认类型。
 	 * Multicast the given application event to appropriate listeners.
 	 * <p>If the {@code eventType} is {@code null}, a default type is built
 	 * based on the {@code event} instance.
