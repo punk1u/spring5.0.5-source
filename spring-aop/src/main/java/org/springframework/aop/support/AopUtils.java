@@ -116,6 +116,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 在目标类型上选择一个invocable方法：如果在目标类型上实际公开，
+	 * 则选择给定方法本身，或者在目标类型的某个接口或目标类型本身上选择相应的方法。
 	 * Select an invocable method on the target type: either the given method itself
 	 * if actually exposed on the target type, or otherwise a corresponding method
 	 * on one of the target type's interfaces or on the target type itself.

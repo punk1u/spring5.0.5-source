@@ -44,8 +44,13 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * {@link GenericApplicationListener}适配器，将事件的处理委托给{@link EventListener}注解标注的方法。
  * {@link GenericApplicationListener} adapter that delegates the processing of
  * an event to an {@link EventListener} annotated method.
+ *
+ * 委托给{@link #processEvent（ApplicationEvent）}，给子类一个偏离默认值的机会。
+ * 如果需要，可以打开{@link PayloadApplicationEvent}的内容，以允许方法声明定义任意事件类型。
+ * 如果定义了条件，则在调用基础方法之前对其进行求值。
  *
  * <p>Delegates to {@link #processEvent(ApplicationEvent)} to give sub-classes
  * a chance to deviate from the default. Unwraps the content of a

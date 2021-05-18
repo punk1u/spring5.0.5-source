@@ -166,6 +166,9 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 		if (!this.nonAnnotatedClasses.contains(targetType)) {
 			Map<Method, EventListener> annotatedMethods = null;
 			try {
+				/**
+				 * 扫描出这个bean中所有带注解的方法
+				 */
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						(MethodIntrospector.MetadataLookup<EventListener>) method ->
 								AnnotatedElementUtils.findMergedAnnotation(method, EventListener.class));
@@ -176,6 +179,9 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 					logger.debug("Could not resolve methods for bean with name '" + beanName + "'", ex);
 				}
 			}
+			/**
+			 * 如果这个bean中不包含带有注解的方法，说明不存在通过@EventListener注解声明的监听器
+			 */
 			if (CollectionUtils.isEmpty(annotatedMethods)) {
 				this.nonAnnotatedClasses.add(targetType);
 				if (logger.isTraceEnabled()) {
@@ -184,16 +190,34 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 			}
 			else {
 				// Non-empty set of methods
+				/**
+				 * 获取Spring上下文对象
+				 */
 				ConfigurableApplicationContext context = getApplicationContext();
+				/**
+				 * 遍历扫描出来的带注解的方法
+				 */
 				for (Method method : annotatedMethods.keySet()) {
 					for (EventListenerFactory factory : factories) {
+						/**
+						 * 找出可以处理这个方法的事件监听器工厂对象
+						 */
 						if (factory.supportsMethod(method)) {
 							Method methodToUse = AopUtils.selectInvocableMethod(method, context.getType(beanName));
+							/**
+							 * 将这个@EventListener注解标注的方法转换为ApplicationListener对象
+							 */
 							ApplicationListener<?> applicationListener =
 									factory.createApplicationListener(beanName, targetType, methodToUse);
 							if (applicationListener instanceof ApplicationListenerMethodAdapter) {
+								/**
+								 * 初始化ApplicationListener事件监听器
+								 */
 								((ApplicationListenerMethodAdapter) applicationListener).init(context, this.evaluator);
 							}
+							/**
+							 * 将这个事件监听器注册到Spring容器中
+							 */
 							context.addApplicationListener(applicationListener);
 							break;
 						}

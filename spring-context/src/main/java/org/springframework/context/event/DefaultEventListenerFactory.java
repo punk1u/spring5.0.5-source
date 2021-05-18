@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 
 /**
+ * 支持常规{@link EventListener}注解的默认{@link EventListenerFactory}实现。默认情况下用作“catch all”实现。
  * Default {@link EventListenerFactory} implementation that supports the
  * regular {@link EventListener} annotation.
  * <p>Used as "catch-all" implementation by default.
