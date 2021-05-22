@@ -165,6 +165,9 @@ class ConfigurationClassParser {
 	 * @param configCandidates
 	 */
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+		/**
+		 * 稍后执行的parse方法中，所有DeferredImportSelector实现类都会被放入集合deferredImportSelectors中
+		 */
 		this.deferredImportSelectors = new LinkedList<>();
 
 		for (BeanDefinitionHolder holder : configCandidates) {
@@ -177,6 +180,9 @@ class ConfigurationClassParser {
 				if (bd instanceof AnnotatedBeanDefinition) {
 					/**
 					 * 根据这个注解启动类中的信息扫描解析相关注解并完成BeanDefinition的封装
+					 *
+					 * 在这个parse方法中，所有DeferredImportSelector实现类都会被放入集合deferredImportSelectors中，
+					 * 它们的selectImports方法不会被执行，而其他ImportSelector实现类的selectImports都会被执行
 					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
@@ -196,6 +202,9 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 此方法内，会将集合deferredImportSelectors中的所有对象取出来执行其selectImports方法
+		 */
 		processDeferredImportSelectors();
 	}
 
@@ -590,6 +599,9 @@ class ConfigurationClassParser {
 		}
 	}
 
+	/**
+	 * 此方法内，会将集合deferredImportSelectors中的所有对象取出来执行其selectImports方法
+	 */
 	private void processDeferredImportSelectors() {
 		List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
 		this.deferredImportSelectors = null;
@@ -661,22 +673,48 @@ class ConfigurationClassParser {
 			this.importStack.push(configClass);
 			try {
 				for (SourceClass candidate : importCandidates) {
+					/**
+					 1. 如果Abc类实现了ImportSelector接口，spring容器就会实例化Abc类，并且调用其selectImports方法；
+					 * 2. DeferredImportSelector是ImportSelector的子类，如果Abc类实现了DeferredImportSelector接口，spring容器就会实例化Abc类，并且调用其selectImports方法，
+					 * 	  和ImportSelector的实例不同的是，DeferredImportSelector的实例的selectImports方法调用时机晚于ImportSelector的实例，要等到@Configuration注解中相关的业务全部都处理完了才会调用（具体逻辑在ConfigurationClassParser.processDeferredImportSelectors方法中），想了解更多DeferredImportSelector和ImportSelector的区别，请参考《ImportSelector与DeferredImportSelector的区别（spring4） 》；
+					 * 3. 如果Abc类实现了ImportBeanDefinitionRegistrar接口，spring容器就会实例化Abc类，并且调用其registerBeanDefinitions方法；
+					 * 4. 如果Abc没有实现ImportSelector、DeferredImportSelector、ImportBeanDefinitionRegistrar等其中的任何一个，spring容器就会实例化Abc类，官方说明在这里:
+					 * https://docs.spring.io/spring-framework/docs/4.3.19.RELEASE/spring-framework-reference/htmlsingle/#beans-java-using-import
+					 */
 					if (candidate.isAssignable(ImportSelector.class)) {
+						/**
+						 * 如果是ImportSelector接口的实现类，就在此处理
+						 */
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
+						/**
+						 * 实例化这些ImportSelector的实现类
+						 */
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
+						/**
+						 * 如果这实现类还实现了BeanFactoryAware、EnvironmentAware这些接口，就要先执行这些接口中声明的方法
+						 */
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						/**
+						 * 如果这个实现类也实现了DeferredImportSelector接口，就被加入到集合deferredImportSelectors中，在解析完成后在执行
+						 */
 						if (this.deferredImportSelectors != null && selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectors.add(
 									new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
 						}
 						else {
+							/**
+							 * 关键代码！！！执行实现类的selectImports方法
+							 */
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
+					/**
+					 * 处理ImportBeanDefinitionRegistrar的实现类
+					 */
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
@@ -706,7 +744,13 @@ class ConfigurationClassParser {
 						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
+					/**
+					 * 处理普通类
+					 */
 					else {
+						/**
+						 * 候选类不是ImportSelector或ImportBeanDefinitionRegistrar->将其作为@Configuration类处理
+						 */
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
 						this.importStack.registerImport(
