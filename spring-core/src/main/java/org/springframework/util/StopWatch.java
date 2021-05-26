@@ -40,6 +40,7 @@ import org.springframework.lang.Nullable;
  * and in development, rather than as part of production applications.
  *
  * 使用方式：在方法中new一个StopWatch对象，然后在想要监控执行时间的代码首尾调用start()方法和stop()方法
+ * 例如SpringBoot中的SpringApplication的run方法
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
