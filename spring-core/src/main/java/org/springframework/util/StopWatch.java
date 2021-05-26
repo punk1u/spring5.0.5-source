@@ -23,17 +23,23 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 /**
+ * 简单的秒表，允许对多个任务计时，显示每个指定任务的总运行时间和运行时间。
  * Simple stop watch, allowing for timing of a number of tasks,
  * exposing total running time and running time for each named task.
  *
+ * 隐藏{@code System.currentTimeMillis（）}的使用，提高应用程序代码的可读性并降低计算错误的可能性。
  * <p>Conceals use of {@code System.currentTimeMillis()}, improving the
  * readability of application code and reducing the likelihood of calculation errors.
  *
+ * 请注意，此对象不是为线程安全而设计的，并且不使用synchronization。
  * <p>Note that this object is not designed to be thread-safe and does not
  * use synchronization.
  *
+ * 这个类通常用于在概念验证和开发过程中验证性能，而不是作为生产应用程序的一部分
  * <p>This class is normally used to verify performance during proof-of-concepts
  * and in development, rather than as part of production applications.
+ *
+ * 使用方式：在方法中new一个StopWatch对象，然后在想要监控执行时间的代码首尾调用start()方法和stop()方法
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
